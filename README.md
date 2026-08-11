@@ -22,12 +22,6 @@ All settings and typing analytics stay in the user's browser.
 - Local analytics for recent Flow sessions, error-prone letters, and slow bigrams.
 - Responsive, keyboard-accessible interface.
 
-## Privacy and data
-
-Typeflow does not require an account. Settings and analytics are saved to browser `localStorage`; they are not sent to a server. Clearing site data or using another browser or device will start with a fresh profile.
-
-Only Flow sessions contribute to personalized analytics. Other modes remain separate from progress tracking.
-
 ## Getting started
 
 ### Requirements
@@ -44,16 +38,6 @@ pnpm dev
 
 Open the local address printed by the development server.
 
-### Validate a change
-
-```bash
-pnpm test
-pnpm lint
-pnpm build
-```
-
-The test suite covers typing behavior, exercise generation, analytics, Freedom mode, and Keyboardshot.
-
 ## Project structure
 
 ```text
@@ -62,12 +46,7 @@ app/
   lib/              Exercise generation, analytics, storage, and shared logic
   globals.css       Themes, layout, and responsive styles
 tests/               Unit and behavior tests
-.openai/hosting.json Sites hosting configuration
 ```
-
-## Technology
-
-Typeflow is built with React, TypeScript, Next.js-compatible app components, vinext, Vite, and Tailwind CSS. The production output is designed for Cloudflare Workers through OpenAI Sites.
 
 ## Current version
 
