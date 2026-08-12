@@ -11,6 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "Typeflow",
     description: "Calm, adaptive typing practice that stays on your device.",
+    icons: { icon: "/icon.svg" },
     openGraph: { title: "Typeflow", description: "Find your rhythm. Build your flow.", images: [image] },
     twitter: { card: "summary_large_image", images: [image] },
   };
