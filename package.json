@@ -7,8 +7,8 @@
   },
   "scripts": {
     "dev": "vinext dev",
-    "build": "vinext build --configLoader runner",
-    "start": "vinext start",
+    "build": "next build",
+    "start": "next start",
     "test": "vitest run --config vitest.config.ts --configLoader runner",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"
