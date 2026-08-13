@@ -6,7 +6,10 @@ export function createKeyboardshotAudioContext() {
   return AudioContextClass ? new AudioContextClass() : null;
 }
 
-export function playKeyboardshotSound(context: AudioContext, hit: boolean) {
+export async function playKeyboardshotSound(context: AudioContext, hit: boolean) {
+  if (context.state === "suspended") await context.resume();
+  if (context.state !== "running") return;
+
   const now = context.currentTime;
   const output = context.createGain();
   output.gain.setValueAtTime(0.0001, now);

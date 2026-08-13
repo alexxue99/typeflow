@@ -30,6 +30,13 @@ describe("finger mapping and generation", () => {
   });
   it("falls back to a sample practice when analytics are empty", () => {
     expect(generateTargetedPractice(EMPTY_ANALYTICS).targets).toEqual([]);
+    expect(generateTargetedPractice(EMPTY_ANALYTICS, 37).text.split(" ")).toHaveLength(37);
+  });
+  it("generates the requested number of personalized practice words", () => {
+    const data = { ...EMPTY_ANALYTICS, bigrams: {
+      th: { attempts: 5, correct: 2, incorrect: 3, totalTime: 3000 },
+    }};
+    expect(generateTargetedPractice(data, 43).text.split(" ")).toHaveLength(43);
   });
   it("ranks difficult bigrams", () => {
     const data = { ...EMPTY_ANALYTICS, bigrams: {

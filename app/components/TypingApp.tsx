@@ -45,7 +45,7 @@ export default function TypingApp() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <button className="brand" onClick={() => setPage("home")} aria-label="Typeflow home">
+        <button className="brand" onClick={() => setPage("home")} aria-label="typeflow home">
           <span className="brand-mark">tf</span><span>typeflow</span>
         </button>
         <nav aria-label="Main navigation">
@@ -63,7 +63,7 @@ export default function TypingApp() {
         {page === "settings" && <SettingsPage settings={settings} setSettings={setSettings} />}
         {page === "help" && <HelpPage />}
       </main>
-      <footer><span>Your data stays in this browser.</span><span>Built for steady progress, not pressure.</span></footer>
+      {/*<footer><span>Your data stays in this browser.</span><span>Built for steady progress, not pressure.</span></footer>*/}
     </div>
   );
 }

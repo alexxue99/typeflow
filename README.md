@@ -1,6 +1,6 @@
-# Typeflow
+# typeflow
 
-Typeflow is a typing practice website for practicing smooth, relaxed typing. It offers several ways to build rhythm, accuracy, finger independence, and keyboard awareness.
+typeflow is a typing practice website for practicing smooth, relaxed typing. It offers several ways to build rhythm, accuracy, finger independence, and keyboard awareness.
 
 All settings and typing analytics stay in the user's browser.
 
@@ -50,4 +50,4 @@ tests/               Unit and behavior tests
 
 ## Current version
 
-Version 0.1.0
+Version 0.1.1

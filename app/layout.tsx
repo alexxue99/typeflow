@@ -9,10 +9,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   const image = `${protocol}://${host}/og.png`;
   return {
-    title: "Typeflow",
+    title: "typeflow",
     description: "Calm, adaptive typing practice that stays on your device.",
     icons: { icon: "/icon.svg" },
-    openGraph: { title: "Typeflow", description: "Find your rhythm. Build your flow.", images: [image] },
+    openGraph: { title: "typeflow", description: "Find your rhythm. Build your flow.", images: [image] },
     twitter: { card: "summary_large_image", images: [image] },
   };
 }

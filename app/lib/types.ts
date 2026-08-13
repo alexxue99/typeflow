@@ -8,6 +8,7 @@ export type FingerMapping = Record<Finger, string[]>;
 export type TypingMode = "flow" | "zen" | "freedom" | "workout" | "practice" | "keyboardshot";
 export type Theme = "light" | "dark" | "paper" | "forest" | "ocean" | "lavender" | "contrast";
 export type CaretAppearance = "highlight" | "underline" | "invisible";
+export type KeyboardLayout = "qwerty" | "dvorak";
 export type Page = "home" | "type" | "analytics" | "settings" | "help";
 
 export interface Settings {
@@ -22,6 +23,7 @@ export interface Settings {
   theme: Theme;
   fontSize: number;
   reducedMotion: boolean;
+  hideCursorDuringTests: boolean;
   caretAppearance: CaretAppearance;
   caretBlink: boolean;
   caretColor: string;
@@ -30,6 +32,10 @@ export interface Settings {
   keyboardshotTargetCount: number;
   keyboardshotGlowFade: boolean;
   keyboardshotHitSounds: boolean;
+  keyboardshotLayout: KeyboardLayout;
+  keyboardshotShowLetters: boolean;
+  keyboardshotFingerColors: boolean;
+  keyboardshotTrace: boolean;
   resetHotkey: string;
 }
 

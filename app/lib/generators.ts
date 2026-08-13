@@ -74,7 +74,7 @@ export function generateWorkoutSequence(mapping: FingerMapping, finger: Finger, 
   const target = mapping[finger].length ? mapping[finger] : ["f"];
   const recovery = Object.entries(mapping).filter(([name]) => name !== finger).flatMap(([, keys]) => keys);
   const chunks: string[] = [];
-  for (let i = 0; i < 18; i += 1) {
+  for (let i = 0; i < count; i += 1) {
     const burst = Array.from({ length: repeats }, (_, n) => target[(i + n) % target.length]).join("");
     chunks.push(burst + (recovery[i % recovery.length] ?? "j"));
   }
@@ -87,16 +87,18 @@ export function rankTrouble(data: AnalyticsData) {
   return Object.entries(data.bigrams).filter(([, s]) => s.attempts >= 2).sort((a, b) => score(b) - score(a)).slice(0, 3).map(([key]) => key);
 }
 
-export function generateTargetedPractice(data: AnalyticsData) {
+export function generateTargetedPractice(data: AnalyticsData, count = 28) {
   const targets = rankTrouble(data);
-  if (!targets.length) return { text: "the calm river moves under a bright open sky we learn with every small step", targets: [] };
+  const sample = "the calm river moves under a bright open sky we learn with every small step".split(" ");
+  if (!targets.length) return { text: Array.from({ length: count }, (_, index) => sample[index % sample.length]).join(" "), targets: [] };
   const woven = WORDS.filter((word) => targets.some((target) => word.includes(target)));
-  return { text: [...woven, ...WORDS, ...targets].slice(0, 28).join(" "), targets };
+  const pool = [...woven, ...WORDS, ...targets];
+  return { text: Array.from({ length: count }, (_, index) => pool[index % pool.length]).join(" "), targets };
 }
 
 export function generateExercise(mode: TypingMode, mapping: FingerMapping, gap: number, count:number, checkBetweenWords: boolean, block: number, finger: Finger, repeats: number, analytics: AnalyticsData, useStandardLetterFrequency = false) {
   if (mode === "zen" || mode === "freedom") return { text: generateZenSequence(mapping, gap, count, checkBetweenWords && mode === "zen", block, useStandardLetterFrequency), warning: "" };
   if (mode === "workout") return { text: generateWorkoutSequence(mapping, finger, count, repeats), warning: "" };
-  if (mode === "practice") return { ...generateTargetedPractice(analytics), warning: "" };
+  if (mode === "practice") return { ...generateTargetedPractice(analytics, count), warning: "" };
   return generateFlowText(mapping, gap, count, checkBetweenWords);
 }

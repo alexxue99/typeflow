@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createTargets, KEYBOARD_KEYS, replaceTarget } from "../app/lib/keyboardshot";
+import { createTargets, DVORAK_ROWS, fingerForPosition, keyboardRows, KEYBOARD_KEYS, QWERTY_ROWS, replaceTarget } from "../app/lib/keyboardshot";
 
 describe("Keyboardshot targets", () => {
   it("starts with three distinct keyboard keys", () => {
@@ -32,5 +32,18 @@ describe("Keyboardshot targets", () => {
   it("does not change targets after a miss", () => {
     const targets = ["q", "w", "e"];
     expect(replaceTarget(targets, "x", () => 0)).toBe(targets);
+  });
+
+  it("switches between QWERTY and DVORAK rows", () => {
+    expect(keyboardRows("qwerty")).toBe(QWERTY_ROWS);
+    expect(keyboardRows("dvorak")).toBe(DVORAK_ROWS);
+    expect(DVORAK_ROWS.flat()).toContain("q");
+  });
+
+  it("assigns physical key positions to touch-typing finger groups", () => {
+    expect(fingerForPosition(0, 0)).toBe("pinky");
+    expect(fingerForPosition(0, 1)).toBe("ring");
+    expect(fingerForPosition(0, 2)).toBe("middle");
+    expect(fingerForPosition(0, 3)).toBe("index");
   });
 });
