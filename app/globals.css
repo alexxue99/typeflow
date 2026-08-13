@@ -53,6 +53,7 @@ footer { border-top: 1px solid var(--border); width: min(1160px, calc(100% - 40p
 .mode-settings summary { cursor:pointer; color:var(--accent); font-weight:800; }
 .mode-settings-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; margin-top:18px; align-items:end; }
 .mode-settings-apply { margin-top:18px; border:1px solid var(--border); background:var(--bg); padding:10px 14px; border-radius:9px; font-weight:700; }
+.analytics-reset { color:var(--incorrect); }
 .stats-strip, .analytics-summary { display:grid; grid-template-columns:repeat(5,1fr); border:1px solid var(--border); border-radius:16px; background:var(--surface); overflow:hidden; margin:30px 0 18px; }
 .metric { padding:18px; text-align:center; border-right:1px solid var(--border); }.metric:last-child { border:0; }.metric strong { display:block; font:600 24px Georgia,serif; }.metric span { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.1em; }
 .typing-panel { position:relative; min-height:310px; background:var(--surface); border:1px solid var(--border); border-radius:22px; padding:56px; box-shadow:var(--shadow); cursor:text; }

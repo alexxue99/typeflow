@@ -31,7 +31,7 @@ export function AnalyticsPage({ data, setData }: AnalyticsPageProps) {
         <DataCard title="Slowest bigrams" rows={bigrams.map(([key, stat]) => [key, `${Math.round(stat.totalTime / stat.attempts)} ms`])} />
       </div>
       <div className="table-card"><h2>Recent sessions</h2>{data.sessions.length ? <table><thead><tr><th>Date</th><th>Mode</th><th>WPM</th><th>Accuracy</th></tr></thead><tbody>{data.sessions.map((item) => <tr key={item.id}><td>{new Date(item.date).toLocaleDateString()}</td><td>{item.mode}</td><td>{item.wpm}</td><td>{item.accuracy}%</td></tr>)}</tbody></table> : <p>No saved sessions yet.</p>}</div>
-      <button className="mode-settings-apply" onClick={reset}>Reset all analytics data</button>
+      <button className="mode-settings-apply analytics-reset" onClick={reset}>Reset all analytics data</button>
     </section>
   );
 }
