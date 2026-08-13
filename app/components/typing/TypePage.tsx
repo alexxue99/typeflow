@@ -51,7 +51,7 @@ function SequentialTypingPage(props: TypePageProps) {
       <div className="stats-strip">
         <Metric label="WPM" value={session.wpm} /><Metric label="Accuracy" value={`${session.accuracy}%`} />
         <Metric label={settings.sessionType === "timed" ? "Remaining" : "Elapsed"} value={`${settings.sessionType === "timed" ? session.remaining : session.elapsed}s`} />
-        <Metric label="Characters" value={session.characterCount} /><Metric label="Progress" value={settings.sessionType === "words" ? `${session.progress}%` : '--'} />
+        <Metric label="Characters" value={session.characterCount} /><Metric label="Progress" value={settings.sessionType === "words" ? `${session.progress}%` : "—"} />
       </div>
       <div
         ref={isFreedom ? freedomSession.panelRef : undefined}

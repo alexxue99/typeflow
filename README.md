@@ -50,4 +50,4 @@ tests/               Unit and behavior tests
 
 ## Current version
 
-Version 0.1.1
+Version 0.1.2
