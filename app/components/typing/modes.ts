@@ -24,7 +24,7 @@ export const MODES: { id: TypingMode; icon: ReactNode; title: string; header: st
     home: "Real words generated to help your fingers flow.", help: "The default mode for practicing flow. Words are generated to separate repeated use of the same finger. This behavior can be controlled by the minimum gap setting found under Settings." },
   { id: "zen", icon: "z", title: "Zen", header: "Focus.",
     home: "Random streams of letters to sharpen your focus.", help: "A more serious mode for practicing unusual letter combinations. Random blocks of letters are generated to separate repeated use of the same finger." },
-  { id: "freedom", icon: freedomIcon, title: "Freedom", header: "Relax.",
+  { id: "freedom", icon: freedomIcon, title: "Freedom", header: "Relax. Type the letters in any order.",
     home: "Clear blocks of random letters in any order you choose.", help: "A mode to practice smooth typing and finger preparation without worrying about timing between fingers. You can clear the letters in each block in any order you like." },
   { id: "keyboardshot", icon: "⌨", title: "Keyboardshot", header: "React quickly.",
     home: "React quickly to multiple highlighted keys at a time.", help: "A fun mode inspired by gridshot from fps games. Type the highlighted keys as quickly as possible." },

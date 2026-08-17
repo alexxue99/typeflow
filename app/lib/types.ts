@@ -7,7 +7,7 @@ export type Finger = (typeof FINGERS)[number];
 export type FingerMapping = Record<Finger, string[]>;
 export type TypingMode = "flow" | "zen" | "freedom" | "workout" | "practice" | "keyboardshot";
 export type Theme = "light" | "dark" | "paper" | "forest" | "ocean" | "lavender" | "contrast";
-export type CaretAppearance = "highlight" | "underline" | "invisible";
+export type CaretAppearance = "highlight" | "underline" | "underline-letter" | "invisible";
 export type KeyboardLayout = "qwerty" | "dvorak";
 export type Page = "home" | "type" | "analytics" | "settings" | "help";
 
@@ -59,4 +59,21 @@ export interface AnalyticsData {
   letters: Record<string, Stat>;
   bigrams: Record<string, Stat>;
   sessions: SessionResult[];
+}
+
+export type LeaderboardMode = Extract<TypingMode, "flow" | "zen" | "freedom" | "keyboardshot">;
+
+export interface LeaderboardEntry {
+  rank: number;
+  initials: string;
+  score: number;
+  accuracy: number;
+  elapsed: number;
+  isYou: boolean;
+}
+
+export interface PersonalBest {
+  score: number;
+  accuracy: number;
+  elapsed: number;
 }

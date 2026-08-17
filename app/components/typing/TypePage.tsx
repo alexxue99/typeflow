@@ -8,6 +8,7 @@ import type { AnalyticsData, Settings, TypingMode } from "../../lib/types";
 import { Metric } from "./Metric";
 import { MODES } from "./modes";
 import { KeyboardshotPage } from "./KeyboardshotPage";
+import { Leaderboard } from "./Leaderboard";
 import { ModeSettings } from "./ModeSettings";
 
 type TypePageProps = {
@@ -33,6 +34,9 @@ function SequentialTypingPage(props: TypePageProps) {
   const practiceTargets = mode === "practice" ? rankTrouble(analytics) : [];
   const [cursorShownByMouse, setCursorShownByMouse] = useState(false);
   const hideCursor = settings.hideCursorDuringTests && session.status === "active" && !cursorShownByMouse;
+  // Freedom has no sequential letter position, so its caret remains under the
+  // current block when the global letter-only underline is selected.
+  const caretAppearance = isFreedom && settings.caretAppearance === "underline-letter" ? "underline" : settings.caretAppearance;
 
   return (
     <section className="type-page" data-hide-cursor={hideCursor ? "true" : "false"} onMouseMove={() => {
@@ -56,7 +60,7 @@ function SequentialTypingPage(props: TypePageProps) {
       <div
         ref={isFreedom ? freedomSession.panelRef : undefined}
         className="typing-panel"
-        data-caret={settings.caretAppearance}
+        data-caret={caretAppearance}
         data-caret-blink={settings.caretBlink ? "on" : "off"}
         onClick={session.focus}
         onKeyDown={isFreedom ? (event) => {
@@ -75,6 +79,7 @@ function SequentialTypingPage(props: TypePageProps) {
         <p>{isFreedom ? freedomSession.message : <>{session.status === "idle" ? "Click anywhere here, then start typing. " : ""}Use Backspace to fix typos. Press {settings.resetHotkey} to reset.</>}</p>
       </div>
       {session.status === "done" && <div className="result-card"><div><span className="eyebrow">Good job</span><h2>{session.wpm} WPM · {session.accuracy}% accuracy</h2></div><button className="primary" onClick={session.restart}>Practice again</button></div>}
+      {(mode === "flow" || mode === "zen" || mode === "freedom") && <Leaderboard mode={mode} settings={settings} done={session.status === "done"} score={session.wpm} accuracy={session.accuracy} elapsed={session.elapsed} />}
     </section>
   );
 }

@@ -5,6 +5,7 @@ import type { AnalyticsData, Settings, TypingMode } from "../../lib/types";
 import { Metric } from "./Metric";
 import { MODES } from "./modes";
 import { ModeSettings } from "./ModeSettings";
+import { Leaderboard } from "./Leaderboard";
 
 type Props = { mode: TypingMode; setMode: (mode: TypingMode) => void; settings: Settings; setSettings: (settings: Settings) => void; analytics: AnalyticsData; setAnalytics: (data: AnalyticsData) => void };
 
@@ -108,8 +109,9 @@ export function KeyboardshotPage({ setMode, settings, setSettings }: Props) {
           return <span data-key={key} data-finger={target && settings.keyboardshotFingerColors ? finger : undefined} aria-label={key} className={`keyboard-key${target ? " target" : ""}`} key={key}>{settings.keyboardshotShowLetters ? key : ""}</span>;
         })}</div>)}
       </div>
-      <div className={`keyboardshot-status ${feedback}`}>{status === "idle" ? "Press any highlighted key to start" : status === "done" ? `${hits} hits · ${accuracy}% accuracy` : feedback === "hit" ? "Hit!" : feedback === "miss" ? "Miss — find a highlighted key" : ""}</div>
+      <p>{status === "idle" ? "Press any highlighted key to start" : status === "done" ? `${hits} hits · ${accuracy}% accuracy` : feedback === "hit" ? "Hit!" : feedback === "miss" ? "Miss — find a highlighted key" : ""}</p>
     </div>
     {status === "done" && <div className="result-card"><div><span className="eyebrow">Nice reflexes</span><h2>{hits} hits · {accuracy}% accuracy</h2></div><button className="primary" onClick={restart}>Play again</button></div>}
+    <Leaderboard mode="keyboardshot" settings={settings} done={status === "done"} score={2 * hits - attempts} accuracy={accuracy} elapsed={elapsed} />
   </section>;
 }
