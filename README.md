@@ -41,7 +41,9 @@ Open the local address printed by the development server.
 
 ### Leaderboard database
 
-Connect a Neon Postgres database to the Vercel project and expose its pooled connection string as `DATABASE_URL`. For local leaderboard development, copy `.env.example` to `.env.local` and replace the example value. The leaderboard initializes its table and indexes on first use; the matching SQL migration is also stored in `drizzle/`.
+Connect a Neon Postgres database to the Vercel project and expose its pooled connection string as `DATABASE_URL`. Use `DATABASE_URL_UNPOOLED` for Drizzle migrations. For local development, `neon env pull` writes the linked branch's managed variables to `.env.local`; `.env.example` documents only the variables this app reads. Apply the SQL migration stored in `drizzle/` before using the leaderboard.
+
+Neon Auth is optional. To enable it, set `NEON_AUTH_BASE_URL` from Neon and create a private `NEON_AUTH_COOKIE_SECRET` of at least 32 characters in both `.env.local` and Vercel. Without those two values, sign-in is hidden and leaderboard entries continue to use the browser's anonymous player ID.
 
 ## Project structure
 
