@@ -2,7 +2,7 @@
 
 typeflow is a typing practice website for practicing smooth, relaxed typing. It offers several ways to build rhythm, accuracy, finger independence, and keyboard awareness.
 
-All settings and typing analytics stay in the user's browser.
+Settings and typing analytics stay in the user's browser. Leaderboard scores are stored in Postgres.
 
 ## Features
 
@@ -20,6 +20,7 @@ All settings and typing analytics stay in the user's browser.
 - Light, dark, paper, forest, ocean, lavender, and high-contrast themes.
 - Optional standard English letter-frequency weighting and Keyboardshot sounds.
 - Local analytics for recent Flow sessions, error-prone letters, and slow bigrams.
+- Shared top-10 leaderboards and personal bests for Flow, Zen, Freedom, and Keyboardshot.
 - Responsive, keyboard-accessible interface.
 
 ## Getting started
@@ -37,6 +38,10 @@ pnpm dev
 ```
 
 Open the local address printed by the development server.
+
+### Leaderboard database
+
+Connect a Neon Postgres database to the Vercel project and expose its pooled connection string as `DATABASE_URL`. For local leaderboard development, copy `.env.example` to `.env.local` and replace the example value. The leaderboard initializes its table and indexes on first use; the matching SQL migration is also stored in `drizzle/`.
 
 ## Project structure
 

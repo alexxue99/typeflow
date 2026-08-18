@@ -1,5 +1,7 @@
+import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
 import { NextResponse } from "next/server";
 import { isLeaderboardMode } from "../../lib/leaderboard";
+import { getNeonAuth, isNeonAuthConfigured } from "../../lib/auth/server";
 
 type ScoreRow = {
   player_key: string;
@@ -8,21 +10,23 @@ type ScoreRow = {
   accuracy: number;
   elapsed: number;
 };
-type LeaderboardDatabase = (typeof import("cloudflare:workers"))["env"]["DB"];
+type Database = NeonQueryFunction<false, false>;
 
+let sql: Database | null = null;
 let schemaReady: Promise<void> | null = null;
 
-async function database() {
-  const { env } = await import("cloudflare:workers");
-  if (!env.DB) throw new Error("The leaderboard database is unavailable.");
-  return env.DB;
+function database() {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) throw new Error("DATABASE_URL is not configured.");
+  sql ??= neon(connectionString);
+  return sql;
 }
 
-function ensureSchema(db: LeaderboardDatabase) {
+function ensureSchema(db: Database) {
   if (!schemaReady) {
-    schemaReady = db.batch([
-      db.prepare(`CREATE TABLE IF NOT EXISTS leaderboard_scores (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+    schemaReady = db.transaction([
+      db.query(`CREATE TABLE IF NOT EXISTS leaderboard_scores (
+        id BIGSERIAL PRIMARY KEY,
         player_key TEXT NOT NULL,
         initials TEXT,
         mode TEXT NOT NULL,
@@ -31,11 +35,11 @@ function ensureSchema(db: LeaderboardDatabase) {
         score INTEGER NOT NULL,
         accuracy INTEGER NOT NULL,
         elapsed INTEGER NOT NULL,
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
+        created_at TIMESTAMPTZ NOT NULL,
+        updated_at TIMESTAMPTZ NOT NULL
       )`),
-      db.prepare("CREATE UNIQUE INDEX IF NOT EXISTS leaderboard_player_config_idx ON leaderboard_scores (player_key, mode, config_key)"),
-      db.prepare("CREATE INDEX IF NOT EXISTS leaderboard_rank_idx ON leaderboard_scores (mode, config_key, score DESC, accuracy DESC, elapsed ASC)"),
+      db.query("CREATE UNIQUE INDEX IF NOT EXISTS leaderboard_player_config_idx ON leaderboard_scores (player_key, mode, config_key)"),
+      db.query("CREATE INDEX IF NOT EXISTS leaderboard_rank_idx ON leaderboard_scores (mode, config_key, score DESC, accuracy DESC, elapsed ASC)"),
     ]).then(() => undefined).catch((error: unknown) => {
       schemaReady = null;
       throw error;
@@ -54,9 +58,11 @@ function validScore(value: unknown, min: number, max: number): value is number {
 }
 
 async function playerKey(request: Request, required: boolean) {
+  const neonSession = isNeonAuthConfigured() ? (await getNeonAuth().getSession()).data : null;
+  const neonUserId = neonSession?.user?.id;
   const authenticatedEmail = request.headers.get("oai-authenticated-user-email")?.trim().toLowerCase();
   const anonymousId = request.headers.get("x-typeflow-player-id")?.trim();
-  const identity = authenticatedEmail ? `account:${authenticatedEmail}` : anonymousId && /^[a-zA-Z0-9-]{16,128}$/.test(anonymousId) ? `browser:${anonymousId}` : null;
+  const identity = neonUserId ? `neon:${neonUserId}` : authenticatedEmail ? `account:${authenticatedEmail}` : anonymousId && /^[a-zA-Z0-9-]{16,128}$/.test(anonymousId) ? `browser:${anonymousId}` : null;
   if (!identity) {
     if (required) throw new Error("A player identity is required.");
     return null;
@@ -71,13 +77,13 @@ function betterThan(candidate: Pick<ScoreRow, "score" | "accuracy" | "elapsed">,
     || (candidate.score === existing.score && candidate.accuracy === existing.accuracy && candidate.elapsed < existing.elapsed);
 }
 
-async function readBoard(db: LeaderboardDatabase, mode: string, configKey: string, currentPlayer: string | null) {
-  const result = await db.prepare(`SELECT player_key, initials, score, accuracy, elapsed
+async function readBoard(db: Database, mode: string, configKey: string, currentPlayer: string | null) {
+  const result = await db.query(`SELECT player_key, initials, score, accuracy, elapsed
     FROM leaderboard_scores
-    WHERE mode = ? AND config_key = ? AND initials IS NOT NULL
+    WHERE mode = $1 AND config_key = $2 AND initials IS NOT NULL
     ORDER BY score DESC, accuracy DESC, elapsed ASC, updated_at ASC
-    LIMIT 10`).bind(mode, configKey).all<ScoreRow>();
-  return (result.results as ScoreRow[]).map((row: ScoreRow, index: number) => ({
+    LIMIT 10`, [mode, configKey]) as ScoreRow[];
+  return result.map((row, index) => ({
     rank: index + 1,
     initials: row.initials,
     score: row.score,
@@ -89,7 +95,7 @@ async function readBoard(db: LeaderboardDatabase, mode: string, configKey: strin
 
 export async function GET(request: Request) {
   try {
-    const db = await database();
+    const db = database();
     await ensureSchema(db);
     const url = new URL(request.url);
     const mode = url.searchParams.get("mode") ?? "";
@@ -97,11 +103,10 @@ export async function GET(request: Request) {
     if (!isLeaderboardMode(mode) || !validConfigKey(configKey)) return NextResponse.json({ error: "Invalid leaderboard." }, { status: 400 });
     const currentPlayer = await playerKey(request, false);
     const board = await readBoard(db, mode, configKey, currentPlayer);
-    const personal = currentPlayer
-      ? await db.prepare("SELECT score, accuracy, elapsed FROM leaderboard_scores WHERE player_key = ? AND mode = ? AND config_key = ?")
-        .bind(currentPlayer, mode, configKey).first<Pick<ScoreRow, "score" | "accuracy" | "elapsed">>()
-      : null;
-    return NextResponse.json({ board, personal });
+    const personalRows = currentPlayer
+      ? await db.query("SELECT score, accuracy, elapsed FROM leaderboard_scores WHERE player_key = $1 AND mode = $2 AND config_key = $3", [currentPlayer, mode, configKey]) as Pick<ScoreRow, "score" | "accuracy" | "elapsed">[]
+      : [];
+    return NextResponse.json({ board, personal: personalRows[0] ?? null });
   } catch (error) {
     console.error("Unable to read leaderboard", error);
     return NextResponse.json({ error: "Leaderboard unavailable." }, { status: 503 });
@@ -110,7 +115,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const db = await database();
+    const db = database();
     await ensureSchema(db);
     const currentPlayer = await playerKey(request, true);
     const body = await request.json() as Record<string, unknown>;
@@ -122,30 +127,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid score." }, { status: 400 });
     }
 
-    const current = await db.prepare("SELECT player_key, initials, score, accuracy, elapsed FROM leaderboard_scores WHERE player_key = ? AND mode = ? AND config_key = ?")
-      .bind(currentPlayer, mode, configKey).first<ScoreRow>();
+    const currentRows = await db.query("SELECT player_key, initials, score, accuracy, elapsed FROM leaderboard_scores WHERE player_key = $1 AND mode = $2 AND config_key = $3", [currentPlayer, mode, configKey]) as ScoreRow[];
+    const current = currentRows[0];
     const candidate = { score, accuracy, elapsed };
     const improved = !current || betterThan(candidate, current);
     const now = new Date().toISOString();
     if (improved) {
-      await db.prepare(`INSERT INTO leaderboard_scores (player_key, initials, mode, config_key, config_label, score, accuracy, elapsed, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      await db.query(`INSERT INTO leaderboard_scores (player_key, initials, mode, config_key, config_label, score, accuracy, elapsed, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $9)
         ON CONFLICT(player_key, mode, config_key) DO UPDATE SET
-          initials = COALESCE(excluded.initials, leaderboard_scores.initials), config_label = excluded.config_label,
-          score = excluded.score, accuracy = excluded.accuracy, elapsed = excluded.elapsed, updated_at = excluded.updated_at`)
-        .bind(currentPlayer, submittedInitials || null, mode, configKey, configLabel, score, accuracy, elapsed, now, now).run();
+          initials = COALESCE(EXCLUDED.initials, leaderboard_scores.initials), config_label = EXCLUDED.config_label,
+          score = EXCLUDED.score, accuracy = EXCLUDED.accuracy, elapsed = EXCLUDED.elapsed, updated_at = EXCLUDED.updated_at`,
+      [currentPlayer, submittedInitials || null, mode, configKey, configLabel, score, accuracy, elapsed, now]);
     }
 
     const personal = improved ? candidate : current!;
-    const competitors = await db.prepare(`SELECT player_key, initials, score, accuracy, elapsed
-      FROM leaderboard_scores WHERE mode = ? AND config_key = ? AND initials IS NOT NULL AND player_key <> ?
-      ORDER BY score DESC, accuracy DESC, elapsed ASC, updated_at ASC LIMIT 10`)
-      .bind(mode, configKey, currentPlayer).all<ScoreRow>();
-    const qualifies = competitors.results.length < 10 || betterThan(personal, competitors.results[9]);
+    const competitors = await db.query(`SELECT player_key, initials, score, accuracy, elapsed
+      FROM leaderboard_scores WHERE mode = $1 AND config_key = $2 AND initials IS NOT NULL AND player_key <> $3
+      ORDER BY score DESC, accuracy DESC, elapsed ASC, updated_at ASC LIMIT 10`, [mode, configKey, currentPlayer]) as ScoreRow[];
+    const qualifies = competitors.length < 10 || betterThan(personal, competitors[9]);
 
     if (submittedInitials && qualifies && (!current || improved || current.score === score && current.accuracy === accuracy && current.elapsed === elapsed)) {
-      await db.prepare("UPDATE leaderboard_scores SET initials = ?, updated_at = ? WHERE player_key = ? AND mode = ? AND config_key = ?")
-        .bind(submittedInitials, now, currentPlayer, mode, configKey).run();
+      await db.query("UPDATE leaderboard_scores SET initials = $1, updated_at = $2 WHERE player_key = $3 AND mode = $4 AND config_key = $5", [submittedInitials, now, currentPlayer, mode, configKey]);
     }
 
     return NextResponse.json({

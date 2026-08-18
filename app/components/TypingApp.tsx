@@ -13,7 +13,7 @@ import { TypePage } from "./typing/TypePage";
 
 const PAGES: Page[] = ["home", "type", "analytics", "settings", "help"];
 
-export default function TypingApp() {
+export default function TypingApp({ authAvailable = false, userName = null }: { authAvailable?: boolean; userName?: string | null }) {
   const [page, setPage] = useState<Page>("home");
   const [mode, setMode] = useState<TypingMode>("flow");
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
@@ -54,6 +54,9 @@ export default function TypingApp() {
               {item === "type" ? "Type" : item[0].toUpperCase() + item.slice(1)}
             </button>
           ))}
+          {authAvailable && (userName
+            ? <a className="auth-nav" href="/auth/sign-out" title={`Signed in as ${userName}`}>Sign out</a>
+            : <a className="auth-nav" href="/auth/sign-in">Sign in</a>)}
         </nav>
       </header>
       <main>
