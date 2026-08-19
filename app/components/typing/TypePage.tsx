@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/refs -- The session hook intentionally exposes its input ref and event handlers to its page component. */
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { calculateResult, collectsAnalytics, recordKeystroke } from "../../lib/analytics";
-import { calculateFreedomWpm, consumeBlockLetter, findIncompleteBlockLetters } from "../../lib/freedom";
+import { calculateFreedomWpm, consumeBlockLetter, findIncompleteBlockLetters, isFreedomBlockComplete } from "../../lib/freedom";
 import { generateExercise, generateZenSequence, rankTrouble } from "../../lib/generators";
 import { advanceToNextWord, backspaceTypedCharacters, isExtraWordCharacter } from "../../lib/typing";
 import type { AnalyticsData, Settings, TypingMode } from "../../lib/types";
@@ -89,14 +89,19 @@ function SequentialTypingPage(props: TypePageProps) {
         aria-label={isFreedom ? "Freedom typing input" : undefined}
         style={{ fontSize: settings.fontSize, "--caret-color": settings.caretColor } as CSSProperties}
       >
+        {isFreedom && session.status === "idle" && <p className="freedom-idle-instruction">Type the letters in each block in any order.</p>}
         {isFreedom ? <FreedomStream blocks={freedomSession.blocks} consumed={freedomSession.consumed} incomplete={freedomSession.incomplete} currentBlock={freedomSession.currentBlock} done={session.status === "done"} onNeedMore={settings.sessionType === "words" ? undefined : freedomSession.append} /> : <TextStream text={sequentialSession.exercise.text} typed={sequentialSession.typed} onNeedMore={settings.sessionType === "words" ? undefined : sequentialSession.appendExercise} />}
         {!isFreedom && <input ref={sequentialSession.inputRef} className="typing-capture" onKeyDown={(event) => {
           if (event.key.length === 1 && event.key !== settings.resetHotkey && session.status !== "done") setCursorShownByMouse(false);
           sequentialSession.onKey(event);
         }} aria-label="Typing input" />}
-        <p>{session.status === "idle" ? "Click anywhere here, then start typing. " : ""}{isFreedom  && "Type the letters in the current block in any order. "}{"Use Backspace to fix typos. "}Press {settings.resetHotkey} to reset.</p>
+        {session.status === "done" ? (
+          <p className="typing-reset-prompt">Test finished! Press {settings.resetHotkey} to reset.</p>
+        ) : (
+          <p>{session.status === "idle" ? "Click anywhere here, then start typing. " : ""}{"Use Backspace to fix typos. "}Press {settings.resetHotkey} to reset.</p>
+        )}
       </div>
-      {session.status === "done" && <div className="result-card"><div><span className="eyebrow">Good job</span><h2>{session.wpm} WPM · {session.accuracy}% accuracy</h2></div><button className="primary" onClick={() => session.restart()}>Practice again</button></div>}
+      {session.status === "done" && <div className="result-card"><div><span className="eyebrow">Good job</span><h2>{session.wpm} WPM · {session.accuracy}% accuracy</h2></div><div className="session-actions"><button className="icon-button" onClick={() => session.restart()} aria-label="Restart session">↻</button></div></div>}
       {(mode === "flow" || mode === "zen" || mode === "freedom") && <Leaderboard mode={mode} settings={settings} done={session.status === "done"} score={session.wpm} accuracy={session.accuracy} elapsed={session.elapsed} username={props.username} authAvailable={props.authAvailable} onSignIn={props.onSignIn} />}
     </section>
   );
@@ -302,18 +307,13 @@ function useFreedomSession(mode: TypingMode, settings: Settings) {
     setConsumed((value) => value.map((row, index) => index === currentBlock ? nextRow : row));
     setHistory((value) => [...value, { block: currentBlock, letter }]);
     setFeedback("hit");
+    if (settings.sessionType === "words" && currentBlock === blocks.length - 1 && isFreedomBlockComplete(nextRow)) {
+      setStatus("done");
+    }
   };
 
-  const message = status === "idle"
-    ? "Type the letters in the current block in any order."
-    : status === "done"
-      ? `${hits} letters · ${accuracy}% accuracy`
-      : feedback === "miss"
-        ? `That letter is not available in this block (${misses} misses)`
-        : "Keep clearing the current block.";
-
   return {
-    blocks, consumed, incomplete, currentBlock, status, elapsed, accuracy, wpm, remaining, restart, onKey, message, panelRef,
+    blocks, consumed, incomplete, currentBlock, status, elapsed, accuracy, wpm, remaining, restart, onKey, panelRef,
     append: appendBlocks,
     focus: () => panelRef.current?.focus({ preventScroll: true }),
     characterCount: hits + spaceHits,

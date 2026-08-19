@@ -1,4 +1,5 @@
 import { FINGER_LABELS } from "../../lib/defaults";
+import { withDefaultTestSettings } from "../../lib/testSettings";
 import { FINGERS, type Finger, type Settings, type TypingMode } from "../../lib/types";
 import { StableSelect } from "./StableSelect";
 
@@ -11,6 +12,12 @@ export function ModeSettings({ mode, settings, setSettings, onRestart }: Props) 
     setSettings(nextSettings);
     onRestart(nextSettings);
   };
+  const resetToDefaults = () => {
+    const nextSettings = withDefaultTestSettings(settings, mode);
+    setSettings(nextSettings);
+    onRestart(nextSettings);
+  };
+  const canResetTestSettings = mode === "flow" || mode === "zen" || mode === "freedom" || mode === "keyboardshot";
   const sequenceMode = mode === "flow" || mode === "zen" || mode === "freedom";
   let countName = "Word count";
   let countSetting = "Words";
@@ -35,5 +42,6 @@ export function ModeSettings({ mode, settings, setSettings, onRestart }: Props) 
       {mode === "workout" && <label>Workout finger<StableSelect value={settings.workoutFinger} onChange={(e) => update("workoutFinger", e.target.value as Finger)}>{FINGERS.map((finger) => <option value={finger} key={finger}>{FINGER_LABELS[finger]}</option>)}</StableSelect></label>}
       {mode === "workout" && <label>Consecutive uses<input type="number" min="2" max="8" value={settings.workoutRepeats} onChange={(e) => update("workoutRepeats", Number(e.target.value))} /></label>}
     </div>
+    {canResetTestSettings && <button type="button" className="mode-settings-apply" onClick={resetToDefaults}>Default test settings</button>}
   </details>;
 }

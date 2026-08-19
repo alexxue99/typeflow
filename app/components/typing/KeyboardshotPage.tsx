@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState}  from "react";
 import { createTargets, fingerForPosition, keyboardRows, replaceTarget } from "../../lib/keyboardshot";
 import { createKeyboardshotAudioContext, playKeyboardshotSound } from "../../lib/keyboardshotSounds";
 import type { AnalyticsData, Settings, TypingMode } from "../../lib/types";
@@ -121,9 +121,9 @@ export function KeyboardshotPage({ setMode, settings, setSettings, username, aut
           return <span data-key={key} data-finger={target && settings.keyboardshotFingerColors ? finger : undefined} aria-label={key} className={`keyboard-key${target ? " target" : ""}`} key={key}>{settings.keyboardshotShowLetters ? key : ""}</span>;
         })}</div>)}
       </div>
-      <p>{status === "idle" ? `Click anywhere here, then press any highlighted key to start. Press ${settings.resetHotkey} to reset.` : status === "done" ? `${hits} hit${hits !== 1 ? "s" : ""} · ${accuracy}% accuracy` : feedback === "hit" ? "Hit!" : feedback === "miss" ? "Miss — find a highlighted key" : ""}</p>
+      <p className={status === "done" ? "typing-reset-prompt" : undefined}>{status === "idle" ? `Click anywhere here, then press any highlighted key to start. Press ${settings.resetHotkey} to reset.` : status === "done" ? `Test finished! Press ${settings.resetHotkey} to reset.` : feedback === "hit" ? "Hit!" : feedback === "miss" ? "Miss — find a highlighted key" : ""}</p>
     </div>
-    {status === "done" && <div className="result-card"><div><span className="eyebrow">Nice reflexes</span><h2>{settings.sessionType === "words" ? (elapsedMilliseconds / 1000).toFixed(3) + "s" : 2 * hits - attempts + " points"} · {accuracy}% accuracy</h2></div><button className="primary" onClick={() => restart()}>Play again</button></div>}
+    {status === "done" && <div className="result-card"><div><span className="eyebrow">Nice reflexes</span><h2>{settings.sessionType === "words" ? (elapsedMilliseconds / 1000).toFixed(3) + "s" : 2 * hits - attempts + " points"} · {accuracy}% accuracy</h2></div><div className="session-actions"><button className="icon-button" onClick={() => restart()} aria-label="Restart session">↻</button></div></div>}
     <Leaderboard mode="keyboardshot" settings={settings} done={status === "done"} score={settings.sessionType === "words" ? elapsedMilliseconds : 2 * hits - attempts} accuracy={accuracy} elapsed={settings.sessionType === "words" ? elapsedMilliseconds : elapsedSeconds} username={username} authAvailable={authAvailable} onSignIn={onSignIn} />
   </section>;
 }

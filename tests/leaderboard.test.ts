@@ -5,13 +5,13 @@ import { createLeaderboardConfig, formatLeaderboardScore, isTimeLeaderboard } fr
 describe("leaderboard configurations", () => {
   it("separates boards when a competitive setting changes", () => {
     const baseline = createLeaderboardConfig("flow", DEFAULT_SETTINGS);
-    const longer = createLeaderboardConfig("flow", { ...DEFAULT_SETTINGS, duration: 60 });
-    const widerGap = createLeaderboardConfig("flow", { ...DEFAULT_SETTINGS, minimumGap: 3 });
+    const differentDuration = createLeaderboardConfig("flow", { ...DEFAULT_SETTINGS, duration: DEFAULT_SETTINGS.duration === 60 ? 30 : 60 });
+    const differentGap = createLeaderboardConfig("flow", { ...DEFAULT_SETTINGS, minimumGap: DEFAULT_SETTINGS.minimumGap === 4 ? 0 : DEFAULT_SETTINGS.minimumGap + 1 });
 
-    expect(longer.key).not.toBe(baseline.key);
-    expect(widerGap.key).not.toBe(baseline.key);
-    expect(baseline.label).toContain("30 seconds");
-    expect(baseline.label).toContain("finger gap 1");
+    expect(differentDuration.key).not.toBe(baseline.key);
+    expect(differentGap.key).not.toBe(baseline.key);
+    expect(baseline.label).toContain(`${DEFAULT_SETTINGS.duration} seconds`);
+    expect(baseline.label).toContain(`finger gap ${DEFAULT_SETTINGS.minimumGap}`);
   });
 
   it("describes Keyboardshot assistance settings", () => {

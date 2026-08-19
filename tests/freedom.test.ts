@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateFreedomWpm, consumeBlockLetter, findIncompleteBlockLetters } from "../app/lib/freedom";
+import { calculateFreedomWpm, consumeBlockLetter, findIncompleteBlockLetters, isFreedomBlockComplete } from "../app/lib/freedom";
 
 describe("Freedom blocks", () => {
   it("accepts letters in any order", () => {
@@ -17,6 +17,10 @@ describe("Freedom blocks", () => {
   });
   it("has no incomplete letters when the whole block was typed", () => {
     expect(findIncompleteBlockLetters([true, true, true])).toEqual([false, false, false]);
+  });
+  it("completes a block only after all of its characters were typed", () => {
+    expect(isFreedomBlockComplete([true, true, false])).toBe(false);
+    expect(isFreedomBlockComplete([true, true, true])).toBe(true);
   });
   it("includes spaces in WPM", () => {
     expect(calculateFreedomWpm(45, 5, 60)).toBe(10);

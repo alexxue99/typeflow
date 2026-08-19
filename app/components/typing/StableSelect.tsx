@@ -1,7 +1,7 @@
 import { useRef, type ComponentPropsWithoutRef, type MouseEvent } from "react";
 
 type StableSelectProps = ComponentPropsWithoutRef<"select">;
-const RAPID_TOGGLE_GUARD_MS = 50;
+const RAPID_TOGGLE_GUARD_MS = 100;
 
 /**
  * Keeps an accidental second press from immediately toggling a native select

@@ -68,7 +68,7 @@ export function Leaderboard({ mode, settings, done, score, accuracy, elapsed, us
     <p className="leaderboard-settings"><strong>Settings:</strong> {config.label}</p>
     {!username && <p className="score-sign-in">Scores are saved only for signed-in users. {authAvailable ? <><button className="auth-text-button" onClick={onSignIn}>Sign in</button> before finishing a session to record yours.</> : "Authentication is not configured for this deployment."}</p>}
     {error ? <p className="leaderboard-message" role="status">{error}</p> : loading ? <p className="leaderboard-message">Loading scores…</p> : board.length === 0 ? <p className="leaderboard-message">No ranked scores yet. Finish a session to set the pace.</p> : <div className="leaderboard-table-wrap"><table>
-      <thead><tr><th>Rank</th><th>Username</th><th>{config.scoreLabel}</th><th>Accuracy</th>{config.scoreKind !== "time" && <th>Time</th>}</tr></thead>
+      <thead><tr><th>Rank</th><th>Username</th><th>Settings</th><th>Accuracy</th>{config.scoreKind !== "time" && <th>Time</th>}</tr></thead>
       <tbody>{board.map((entry) => <tr key={`${entry.rank}-${entry.username}`} className={entry.isYou ? "leaderboard-you" : undefined}><td>#{entry.rank}</td><td>{entry.username}{entry.isYou ? <span> you</span> : null}</td><td><strong>{formatLeaderboardScore(entry.score, config)}</strong></td><td>{entry.accuracy}%</td>{config.scoreKind !== "time" && <td>{entry.elapsed}s</td>}</tr>)}</tbody>
     </table></div>}
   </section>;
