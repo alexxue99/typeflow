@@ -20,11 +20,11 @@
           "primaryKey": false,
           "notNull": true
         },
-        "initials": {
-          "name": "initials",
+        "username": {
+          "name": "username",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "mode": {
           "name": "mode",

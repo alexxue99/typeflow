@@ -1,6 +1,6 @@
 {
   "name": "typeflow",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
@@ -9,6 +9,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "version": "node scripts/sync-readme-version.mjs",
     "test": "vitest run --config vitest.config.ts --configLoader runner",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"

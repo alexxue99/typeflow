@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/refs -- The session hook intentionally exposes its input ref and event handlers to its page component. */
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { calculateResult, collectsAnalytics, recordKeystroke } from "../../lib/analytics";
-import { consumeBlockLetter } from "../../lib/freedom";
+import { consumeBlockLetter, findIncompleteBlockLetters } from "../../lib/freedom";
 import { generateExercise, generateZenSequence, rankTrouble } from "../../lib/generators";
 import { advanceToNextWord, backspaceTypedCharacters, isExtraWordCharacter } from "../../lib/typing";
 import type { AnalyticsData, Settings, TypingMode } from "../../lib/types";
@@ -18,6 +18,9 @@ type TypePageProps = {
   setSettings: (settings: Settings) => void;
   analytics: AnalyticsData;
   setAnalytics: (data: AnalyticsData) => void;
+  username: string | null;
+  authAvailable: boolean;
+  onSignIn: () => void;
 };
 
 export function TypePage(props: TypePageProps) {
@@ -47,9 +50,9 @@ function SequentialTypingPage(props: TypePageProps) {
       </div>
       <div className="session-head">
         <div><span className="eyebrow">{mode} session</span><h1>{session.status === "done" ? "Session complete." : MODES.find((m) => m.id === mode)?.header}</h1></div>
-        <div className="session-actions"><button className="icon-button" onClick={session.restart} aria-label="Restart session">↻</button></div>
+        <div className="session-actions"><button className="icon-button" onClick={() => session.restart()} aria-label="Restart session">↻</button></div>
       </div>
-      <ModeSettings mode={mode} settings={settings} setSettings={setSettings} onRestart={session.restart} />
+      <ModeSettings mode={mode} settings={settings} setSettings={setSettings} onRestart={(nextSettings) => session.restart(nextSettings)} />
       {!isFreedom && sequentialSession.exercise.warning && <div className="notice">{sequentialSession.exercise.warning}</div>}
       {mode === "practice" && <div className="notice">{practiceTargets.length ? `This practice emphasizes "${practiceTargets.join(", ")}" based on your recent Flow performances.` : "Complete a few Flow sessions to unlock personalized exercises. This sample session is not added to your analytics."}</div>}
       <div className="stats-strip">
@@ -71,21 +74,21 @@ function SequentialTypingPage(props: TypePageProps) {
         aria-label={isFreedom ? "Freedom typing input" : undefined}
         style={{ fontSize: settings.fontSize, "--caret-color": settings.caretColor } as CSSProperties}
       >
-        {isFreedom ? <FreedomStream blocks={freedomSession.blocks} consumed={freedomSession.consumed} currentBlock={freedomSession.currentBlock} done={session.status === "done"} onNeedMore={settings.sessionType === "words" ? undefined : freedomSession.append} /> : <TextStream text={sequentialSession.exercise.text} typed={sequentialSession.typed} onNeedMore={settings.sessionType === "words" ? undefined : sequentialSession.appendExercise} />}
+        {isFreedom ? <FreedomStream blocks={freedomSession.blocks} consumed={freedomSession.consumed} incomplete={freedomSession.incomplete} currentBlock={freedomSession.currentBlock} done={session.status === "done"} onNeedMore={settings.sessionType === "words" ? undefined : freedomSession.append} /> : <TextStream text={sequentialSession.exercise.text} typed={sequentialSession.typed} onNeedMore={settings.sessionType === "words" ? undefined : sequentialSession.appendExercise} />}
         {!isFreedom && <input ref={sequentialSession.inputRef} className="typing-capture" onKeyDown={(event) => {
           if (event.key.length === 1 && event.key !== settings.resetHotkey && session.status !== "done") setCursorShownByMouse(false);
           sequentialSession.onKey(event);
         }} aria-label="Typing input" />}
-        <p>{isFreedom ? freedomSession.message : <>{session.status === "idle" ? "Click anywhere here, then start typing. " : ""}Use Backspace to fix typos. Press {settings.resetHotkey} to reset.</>}</p>
+        <p>{session.status === "idle" ? "Click anywhere here, then start typing. " : ""}{isFreedom  && "Type the letters in the current block in any order. "}{"Use Backspace to fix typos. "}Press {settings.resetHotkey} to reset.</p>
       </div>
-      {session.status === "done" && <div className="result-card"><div><span className="eyebrow">Good job</span><h2>{session.wpm} WPM · {session.accuracy}% accuracy</h2></div><button className="primary" onClick={session.restart}>Practice again</button></div>}
-      {(mode === "flow" || mode === "zen" || mode === "freedom") && <Leaderboard mode={mode} settings={settings} done={session.status === "done"} score={session.wpm} accuracy={session.accuracy} elapsed={session.elapsed} />}
+      {session.status === "done" && <div className="result-card"><div><span className="eyebrow">Good job</span><h2>{session.wpm} WPM · {session.accuracy}% accuracy</h2></div><button className="primary" onClick={() => session.restart()}>Practice again</button></div>}
+      {(mode === "flow" || mode === "zen" || mode === "freedom") && <Leaderboard mode={mode} settings={settings} done={session.status === "done"} score={session.wpm} accuracy={session.accuracy} elapsed={session.elapsed} username={props.username} authAvailable={props.authAvailable} onSignIn={props.onSignIn} />}
     </section>
   );
 }
 
-function useTypingSession({ mode, settings, analytics, setAnalytics }: Omit<TypePageProps, "setMode" | "setSettings">) {
-  const createExercise = () => generateExercise(mode, settings.mapping, settings.minimumGap, settings.wordCount, settings.checkBetweenWords && mode !== "freedom", settings.zenBlockSize, settings.workoutFinger, settings.workoutRepeats, analytics, settings.useStandardLetterFrequency);
+function useTypingSession({ mode, settings, analytics, setAnalytics }: Omit<TypePageProps, "setMode" | "setSettings" | "username" | "authAvailable" | "onSignIn">) {
+  const createExercise = (nextSettings = settings) => generateExercise(mode, nextSettings.mapping, nextSettings.minimumGap, nextSettings.wordCount, nextSettings.checkBetweenWords && mode !== "freedom", nextSettings.zenBlockSize, nextSettings.workoutFinger, nextSettings.workoutRepeats, analytics, nextSettings.useStandardLetterFrequency);
   const [exercise, setExercise] = useState(createExercise);
   const [typed, setTyped] = useState<string[]>([]);
   const [status, setStatus] = useState<"idle" | "active" | "done">("idle");
@@ -105,8 +108,8 @@ function useTypingSession({ mode, settings, analytics, setAnalytics }: Omit<Type
   // The generator intentionally uses the latest session settings when the viewport needs refilling.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, settings, analytics]);
-  const restart = () => {
-    setExercise(createExercise());
+  const restart = (nextSettings = settings) => {
+    setExercise(createExercise(nextSettings));
     setTyped([]);
     setElapsed(0);
     setStatus("idle");
@@ -186,9 +189,10 @@ function useTypingSession({ mode, settings, analytics, setAnalytics }: Omit<Type
 type FreedomHit = { block: number; letter: number };
 
 function useFreedomSession(mode: TypingMode, settings: Settings) {
-  const makeBlocks = () => generateZenSequence(settings.mapping, settings.minimumGap, settings.wordCount, false, settings.zenBlockSize, settings.useStandardLetterFrequency).split(" ");
+  const makeBlocks = (nextSettings = settings) => generateZenSequence(nextSettings.mapping, nextSettings.minimumGap, nextSettings.wordCount, false, nextSettings.zenBlockSize, nextSettings.useStandardLetterFrequency).split(" ");
   const [blocks, setBlocks] = useState(makeBlocks);
   const [consumed, setConsumed] = useState<boolean[][]>(() => blocks.map((block) => Array(block.length).fill(false)));
+  const [incomplete, setIncomplete] = useState<boolean[][]>(() => blocks.map((block) => Array(block.length).fill(false)));
   const [currentBlock, setCurrentBlock] = useState(0);
   const [history, setHistory] = useState<FreedomHit[]>([]);
   const [attempts, setAttempts] = useState(0);
@@ -207,14 +211,16 @@ function useFreedomSession(mode: TypingMode, settings: Settings) {
     const extra = makeBlocks();
     setBlocks((value) => [...value, ...extra]);
     setConsumed((value) => [...value, ...extra.map((block) => Array(block.length).fill(false))]);
+    setIncomplete((value) => [...value, ...extra.map((block) => Array(block.length).fill(false))]);
   // The generator intentionally uses the latest session settings when the viewport needs refilling.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings]);
 
-  const restart = () => {
-    const nextBlocks = makeBlocks();
+  const restart = (nextSettings = settings) => {
+    const nextBlocks = makeBlocks(nextSettings);
     setBlocks(nextBlocks);
     setConsumed(nextBlocks.map((block) => Array(block.length).fill(false)));
+    setIncomplete(nextBlocks.map((block) => Array(block.length).fill(false)));
     setCurrentBlock(0);
     setHistory([]);
     setAttempts(0);
@@ -243,12 +249,25 @@ function useFreedomSession(mode: TypingMode, settings: Settings) {
   const onKey = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === settings.resetHotkey) { event.preventDefault(); restart(); return; }
     if (status === "done") return;
-    if (event.key === " " || event.key === "Spacebar") { event.preventDefault(); return; }
+    if (event.key === " " || event.key === "Spacebar") {
+      event.preventDefault();
+      if (status === "idle") { setStatus("active"); startedAt.current = performance.now(); }
+      setIncomplete((value) => value.map((row, index) => index === currentBlock ? findIncompleteBlockLetters(consumed[currentBlock]) : row));
+      setFeedback("");
+      if (currentBlock === blocks.length - 1) {
+        if (settings.sessionType !== "words") {
+          appendBlocks();
+          setCurrentBlock((value) => value + 1);
+        } else setStatus("done");
+      } else setCurrentBlock((value) => value + 1);
+      return;
+    }
     if (event.key === "Backspace") {
       event.preventDefault();
       const last = history.at(-1);
       if (!last) return;
       setConsumed((value) => value.map((row, blockIndex) => blockIndex === last.block ? row.map((used, letterIndex) => letterIndex === last.letter ? false : used) : row));
+      setIncomplete((value) => value.map((row, blockIndex) => blockIndex === last.block ? row.map(() => false) : row));
       setHistory((value) => value.slice(0, -1));
       setCurrentBlock(last.block);
       setFeedback("");
@@ -265,14 +284,6 @@ function useFreedomSession(mode: TypingMode, settings: Settings) {
     setConsumed((value) => value.map((row, index) => index === currentBlock ? nextRow : row));
     setHistory((value) => [...value, { block: currentBlock, letter }]);
     setFeedback("hit");
-    if (nextRow.every(Boolean)) {
-      if (currentBlock === blocks.length - 1) {
-        if (settings.sessionType !== "words") {
-          appendBlocks();
-          setCurrentBlock((value) => value + 1);
-        } else setStatus("done");
-      } else setCurrentBlock((value) => value + 1);
-    }
   };
 
   const message = status === "idle"
@@ -284,7 +295,7 @@ function useFreedomSession(mode: TypingMode, settings: Settings) {
         : "Keep clearing the current block.";
 
   return {
-    blocks, consumed, currentBlock, status, elapsed, accuracy, wpm, remaining, restart, onKey, message, panelRef,
+    blocks, consumed, incomplete, currentBlock, status, elapsed, accuracy, wpm, remaining, restart, onKey, message, panelRef,
     append: appendBlocks,
     focus: () => panelRef.current?.focus({ preventScroll: true }),
     characterCount: hits,
@@ -292,7 +303,7 @@ function useFreedomSession(mode: TypingMode, settings: Settings) {
   };
 }
 
-function FreedomStream({ blocks, consumed, currentBlock, done, onNeedMore }: { blocks: string[]; consumed: boolean[][]; currentBlock: number; done: boolean; onNeedMore?: () => void }) {
+function FreedomStream({ blocks, consumed, incomplete, currentBlock, done, onNeedMore }: { blocks: string[]; consumed: boolean[][]; incomplete: boolean[][]; currentBlock: number; done: boolean; onNeedMore?: () => void }) {
   const streamRef = useRef<HTMLDivElement>(null);
   const refillRequested = useRef(false);
   const [lineOffset, setLineOffset] = useState(0);
@@ -329,7 +340,7 @@ function FreedomStream({ blocks, consumed, currentBlock, done, onNeedMore }: { b
 
   return <div className="freedom-stream-viewport" style={viewportHeight ? { height: viewportHeight } : undefined} aria-live="polite">
     <div ref={streamRef} className="freedom-stream" style={{ transform: `translateY(-${lineOffset}px)` }}>
-      {blocks.map((block, blockIndex) => <span key={blockIndex} className={`freedom-block${blockIndex === currentBlock && !done ? " current" : ""}`}>{block.split("").map((letter, letterIndex) => <span key={letterIndex} className={`freedom-letter${consumed[blockIndex][letterIndex] ? " consumed" : ""}`}>{letter}</span>)}</span>)}
+      {blocks.map((block, blockIndex) => <span key={blockIndex} className={`freedom-block${blockIndex === currentBlock && !done ? " current" : ""}`}>{block.split("").map((letter, letterIndex) => <span key={letterIndex} className={`freedom-letter${consumed[blockIndex][letterIndex] ? " consumed" : incomplete[blockIndex][letterIndex] ? " incomplete" : ""}`}>{letter}</span>)}</span>)}
     </div>
   </div>;
 }

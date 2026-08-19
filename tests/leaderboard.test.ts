@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_SETTINGS } from "../app/lib/defaults";
-import { createLeaderboardConfig } from "../app/lib/leaderboard";
+import { createLeaderboardConfig, formatLeaderboardScore, isTimeLeaderboard } from "../app/lib/leaderboard";
 
 describe("leaderboard configurations", () => {
   it("separates boards when a competitive setting changes", () => {
@@ -14,7 +14,7 @@ describe("leaderboard configurations", () => {
     expect(baseline.label).toContain("finger gap 1");
   });
 
-  it("describes Keyboardshot assistance and layout settings", () => {
+  it("describes Keyboardshot assistance settings", () => {
     const config = createLeaderboardConfig("keyboardshot", {
       ...DEFAULT_SETTINGS,
       keyboardshotLayout: "dvorak",
@@ -23,8 +23,8 @@ describe("leaderboard configurations", () => {
     });
 
     expect(config.scoreLabel).toBe("points");
-    expect(config.label).toContain("4 highlighted");
-    expect(config.label).toContain("DVORAK");
+    expect(config.label).toContain("4 keys highlighted");
+    expect(config.label).toContain("standard letter frequency on");
     expect(config.label).toContain("letters hidden");
   });
 
@@ -35,5 +35,26 @@ describe("leaderboard configurations", () => {
     expect(createLeaderboardConfig("zen", settings).label).toContain("40 blocks");
     expect(createLeaderboardConfig("freedom", settings).label).toContain("40 blocks");
     expect(createLeaderboardConfig("keyboardshot", settings).label).toContain("40 targets");
+  });
+
+  it("ranks fixed-target Keyboardshot sessions by millisecond time", () => {
+    const config = createLeaderboardConfig("keyboardshot", {
+      ...DEFAULT_SETTINGS,
+      sessionType: "words",
+      wordCount: 25,
+    });
+
+    expect(config.scoreKind).toBe("time");
+    expect(config.scoreLabel).toBe("Time");
+    expect(isTimeLeaderboard("keyboardshot", config.key)).toBe(true);
+    expect(formatLeaderboardScore(1234, config)).toBe("1.234s");
+  });
+
+  it("keeps timed Keyboardshot sessions ranked by points", () => {
+    const config = createLeaderboardConfig("keyboardshot", DEFAULT_SETTINGS);
+
+    expect(config.scoreKind).toBe("higher");
+    expect(config.scoreLabel).toBe("points");
+    expect(isTimeLeaderboard("keyboardshot", config.key)).toBe(false);
   });
 });

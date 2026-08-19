@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { DEFAULT_SETTINGS, EMPTY_ANALYTICS } from "../lib/defaults";
 import { loadAnalytics, loadSettings, saveAnalytics, saveSettings } from "../lib/storage";
 import type { AnalyticsData, Page, Settings, TypingMode } from "../lib/types";
@@ -10,10 +11,14 @@ import { HelpPage } from "./typing/HelpPage";
 import { HomePage } from "./typing/HomePage";
 import { SettingsPage } from "./typing/SettingsPage";
 import { TypePage } from "./typing/TypePage";
+import { UserStatsPage } from "./typing/UserStatsPage";
+import { SignInForm, SignUpForm } from "./auth/AuthForms";
 
-const PAGES: Page[] = ["home", "type", "analytics", "settings", "help"];
+const PAGES = ["home", "type", "stats", "analytics", "settings", "help"] as const;
+const PAGE_LABELS: Record<(typeof PAGES)[number], string> = { home: "Home", type: "Type", stats: "User stats", analytics: "Analytics", settings: "Settings", help: "Help" };
 
-export default function TypingApp({ authAvailable = false, userName = null }: { authAvailable?: boolean; userName?: string | null }) {
+export default function TypingApp({ authAvailable = false, username = null }: { authAvailable?: boolean; username?: string | null }) {
+  const router = useRouter();
   const [page, setPage] = useState<Page>("home");
   const [mode, setMode] = useState<TypingMode>("flow");
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
@@ -42,6 +47,11 @@ export default function TypingApp({ authAvailable = false, userName = null }: { 
     setPage("type");
   };
 
+  const finishAuth = () => {
+    setPage("home");
+    router.refresh();
+  };
+
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -51,22 +61,25 @@ export default function TypingApp({ authAvailable = false, userName = null }: { 
         <nav aria-label="Main navigation">
           {PAGES.map((item) => (
             <button key={item} className={page === item ? "active" : ""} onClick={() => setPage(item)}>
-              {item === "type" ? "Type" : item[0].toUpperCase() + item.slice(1)}
+              {PAGE_LABELS[item]}
             </button>
           ))}
-          {authAvailable && (userName
-            ? <a className="auth-nav" href="/auth/sign-out" title={`Signed in as ${userName}`}>Sign out</a>
-            : <a className="auth-nav" href="/auth/sign-in">Sign in</a>)}
+          {authAvailable && (username
+            ? <a className="auth-nav" href="/auth/sign-out" title={`Signed in as ${username}`}>Sign out</a>
+            : <button className={page === "sign-in" || page === "sign-up" ? "auth-nav active" : "auth-nav"} onClick={() => setPage("sign-in")}>Sign in</button>)}
         </nav>
       </header>
       <main>
         {page === "home" && <HomePage onStart={start} />}
-        {page === "type" && <TypePage mode={mode} setMode={setMode} settings={settings} setSettings={setSettings} analytics={analytics} setAnalytics={setAnalytics} />}
+        {page === "type" && <TypePage mode={mode} setMode={setMode} settings={settings} setSettings={setSettings} analytics={analytics} setAnalytics={setAnalytics} username={username} authAvailable={authAvailable} onSignIn={() => setPage("sign-in")} />}
+        {page === "stats" && <UserStatsPage username={username} authAvailable={authAvailable} onSignIn={() => setPage("sign-in")} />}
         {page === "analytics" && <AnalyticsPage data={analytics} setData={setAnalytics} />}
         {page === "settings" && <SettingsPage settings={settings} setSettings={setSettings} />}
         {page === "help" && <HelpPage />}
+        {page === "sign-in" && <section className="auth-page in-app-auth-page"><SignInForm onHome={() => setPage("home")} onSwitch={() => setPage("sign-up")} onSuccess={finishAuth} /></section>}
+        {page === "sign-up" && <section className="auth-page in-app-auth-page"><SignUpForm onHome={() => setPage("home")} onSwitch={() => setPage("sign-in")} onSuccess={finishAuth} /></section>}
       </main>
-      {/*<footer><span>Your data stays in this browser.</span><span>Built for steady progress, not pressure.</span></footer>*/}
+      <footer><span></span><span>Version 0.1.2</span></footer>
     </div>
   );
 }

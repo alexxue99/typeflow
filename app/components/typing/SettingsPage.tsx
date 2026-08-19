@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { DEFAULT_MAPPING, FINGER_LABELS } from "../../lib/defaults";
 import { FINGERS, type Finger, type Settings } from "../../lib/types";
+import { StableSelect } from "./StableSelect";
 
 type SettingsPageProps = {
   settings: Settings;
@@ -20,13 +21,13 @@ export function SettingsPage({ settings, setSettings }: SettingsPageProps) {
       <div className="page-title"><div><span className="eyebrow">Make it yours</span><h1>Settings</h1><p>Changes save automatically in this browser.</p></div></div>
       <div className="settings-grid">
         <fieldset><legend>General</legend>
-          <label>Reset hotkey<select value={settings.resetHotkey} onChange={(e) => update("resetHotkey", e.target.value)}><option value="Tab">Tab</option><option value="Enter">Enter</option><option value="Backspace">Backspace</option><option value="Delete">Delete</option><option value="`">Backtick (`)</option></select></label>
+          <label>Reset hotkey<StableSelect value={settings.resetHotkey} onChange={(e) => update("resetHotkey", e.target.value)}><option value="Tab">Tab</option><option value="Enter">Enter</option><option value="Backspace">Backspace</option><option value="Delete">Delete</option><option value="`">Backtick (`)</option></StableSelect></label>
           <label className="check-row"><input type="checkbox" checked={settings.hideCursorDuringTests} onChange={(e) => update("hideCursorDuringTests", e.target.checked)} /> Hide cursor during tests</label>
         </fieldset>
         <fieldset><legend>Appearance</legend>
-          <label>Theme<select value={settings.theme} onChange={(e) => update("theme", e.target.value as Settings["theme"])}>{["light", "dark", "paper", "forest", "ocean", "lavender", "contrast"].map((theme) => <option value={theme} key={theme}>{theme[0].toUpperCase() + theme.slice(1)}</option>)}</select></label>
+          <label>Theme<StableSelect value={settings.theme} onChange={(e) => update("theme", e.target.value as Settings["theme"])}>{["light", "dark", "paper", "forest", "ocean", "lavender", "contrast"].map((theme) => <option value={theme} key={theme}>{theme[0].toUpperCase() + theme.slice(1)}</option>)}</StableSelect></label>
           <label>Typing font size <strong>{settings.fontSize}px</strong><input type="range" min="22" max="44" value={settings.fontSize} onChange={(e) => update("fontSize", Number(e.target.value))} /></label>
-          <label>Caret appearance<select value={settings.caretAppearance} onChange={(e) => update("caretAppearance", e.target.value as Settings["caretAppearance"])}><option value="highlight">Highlighted character</option><option value="underline">Underline word</option><option value="underline-letter">Underline letter</option><option value="invisible">Invisible</option></select></label>
+          <label>Caret appearance<StableSelect value={settings.caretAppearance} onChange={(e) => update("caretAppearance", e.target.value as Settings["caretAppearance"])}><option value="highlight">Highlighted character</option><option value="underline">Underline word</option><option value="underline-letter">Underline letter</option><option value="invisible">Invisible</option></StableSelect></label>
           <label className="color-row">Caret color<input type="color" value={settings.caretColor} onChange={(e) => update("caretColor", e.target.value)} /></label>
           <label className="check-row"><input type="checkbox" checked={settings.caretBlink} onChange={(e) => update("caretBlink", e.target.checked)} /> Caret blink</label>
           <label className="check-row"><input type="checkbox" checked={settings.reducedMotion} onChange={(e) => update("reducedMotion", e.target.checked)} /> Reduce motion</label>

@@ -5,3 +5,7 @@ export function consumeBlockLetter(block: string, consumed: boolean[], key: stri
   next[index] = true;
   return next;
 }
+
+export function findIncompleteBlockLetters(consumed: boolean[]): boolean[] {
+  return consumed.map((used) => !used);
+}

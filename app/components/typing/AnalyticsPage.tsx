@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { isValidBigram } from "../../lib/analytics";
 import { EMPTY_ANALYTICS } from "../../lib/defaults";
 import type { AnalyticsData } from "../../lib/types";
 import { Metric } from "./Metric";
@@ -13,6 +14,7 @@ export function AnalyticsPage({ data, setData }: AnalyticsPageProps) {
     .sort((a, b) => (b[1].incorrect / b[1].attempts) - (a[1].incorrect / a[1].attempts))
     .slice(0, 5), [data]);
   const bigrams = useMemo(() => Object.entries(data.bigrams)
+    .filter(([key]) => isValidBigram(key))
     .sort((a, b) => (b[1].totalTime / b[1].attempts) - (a[1].totalTime / a[1].attempts))
     .slice(0, 5), [data]);
   const overallWpm = average(data.sessions.map((item) => item.wpm));

@@ -26,7 +26,9 @@
 /.idea/
 /.vscode/
 /examples/
-/public/
+
+# neon
+.neon
 
 # debug
 npm-debug.log*

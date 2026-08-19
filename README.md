@@ -2,7 +2,7 @@
 
 typeflow is a typing practice website for practicing smooth, relaxed typing. It offers several ways to build rhythm, accuracy, finger independence, and keyboard awareness.
 
-Settings and typing analytics stay in the user's browser. Leaderboard scores are stored in Postgres.
+Settings and typing analytics stay in the user's browser. Authenticated leaderboard scores and user bests are stored in Postgres.
 
 ## Features
 
@@ -20,7 +20,9 @@ Settings and typing analytics stay in the user's browser. Leaderboard scores are
 - Light, dark, paper, forest, ocean, lavender, and high-contrast themes.
 - Optional standard English letter-frequency weighting and Keyboardshot sounds.
 - Local analytics for recent Flow sessions, error-prone letters, and slow bigrams.
-- Shared top-10 leaderboards and personal bests for Flow, Zen, Freedom, and Keyboardshot.
+- Email/password accounts powered by Neon Auth.
+- Shared username-based top-10 leaderboards for Flow, Zen, Freedom, and Keyboardshot; only signed-in users can save scores.
+- A User stats page with the signed-in user's best result for every mode and competitive setting combination.
 - Responsive, keyboard-accessible interface.
 
 ## Getting started
@@ -43,7 +45,7 @@ Open the local address printed by the development server.
 
 Connect a Neon Postgres database to the Vercel project and expose its pooled connection string as `DATABASE_URL`. Use `DATABASE_URL_UNPOOLED` for Drizzle migrations. For local development, `neon env pull` writes the linked branch's managed variables to `.env.local`; `.env.example` documents only the variables this app reads. Apply the SQL migration stored in `drizzle/` before using the leaderboard.
 
-Neon Auth is optional. To enable it, set `NEON_AUTH_BASE_URL` from Neon and create a private `NEON_AUTH_COOKIE_SECRET` of at least 32 characters in both `.env.local` and Vercel. Without those two values, sign-in is hidden and leaderboard entries continue to use the browser's anonymous player ID.
+Enable Neon Auth by setting `NEON_AUTH_BASE_URL` from Neon and creating a private `NEON_AUTH_COOKIE_SECRET` of at least 32 characters in both `.env.local` and Vercel. Without those two values, account controls are hidden and scores cannot be saved. Leaderboards remain publicly readable.
 
 ## Project structure
 

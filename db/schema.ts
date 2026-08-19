@@ -3,7 +3,7 @@ import { index, integer, pgTable, serial, text, timestamp, uniqueIndex } from "d
 export const leaderboardScores = pgTable("leaderboard_scores", {
   id: serial("id").primaryKey(),
   playerKey: text("player_key").notNull(),
-  initials: text("initials"),
+  username: text("username").notNull(),
   mode: text("mode").notNull(),
   configKey: text("config_key").notNull(),
   configLabel: text("config_label").notNull(),

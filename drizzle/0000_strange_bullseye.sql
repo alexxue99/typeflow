@@ -1,7 +1,7 @@
 CREATE TABLE "leaderboard_scores" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"player_key" text NOT NULL,
-	"initials" text,
+	"username" text NOT NULL,
 	"mode" text NOT NULL,
 	"config_key" text NOT NULL,
 	"config_label" text NOT NULL,

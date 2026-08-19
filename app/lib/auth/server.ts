@@ -16,3 +16,19 @@ export function getNeonAuth() {
   });
   return authInstance;
 }
+
+export type AuthenticatedUser = { id: string; username: string };
+
+export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> {
+  if (!isNeonAuthConfigured()) return null;
+  const session = (await getNeonAuth().getSession()).data;
+  const id = session?.user?.id;
+  const username = session?.user?.name?.trim();
+  if (!id || !username) return null;
+  return { id, username };
+}
+
+export async function leaderboardPlayerKey(userId: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`neon:${userId}`));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}

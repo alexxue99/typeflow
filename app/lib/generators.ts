@@ -1,3 +1,4 @@
+import { isValidBigram } from "./analytics";
 import type { AnalyticsData, Finger, FingerMapping, TypingMode } from "./types";
 
 import { WORDS } from "./words";
@@ -84,7 +85,7 @@ export function generateWorkoutSequence(mapping: FingerMapping, finger: Finger, 
 export function rankTrouble(data: AnalyticsData) {
   const score = ([, stat]: [string, { attempts: number; incorrect: number; totalTime: number }]) =>
     (stat.totalTime / Math.max(1, stat.attempts)) + (stat.incorrect / Math.max(1, stat.attempts)) * 600;
-  return Object.entries(data.bigrams).filter(([, s]) => s.attempts >= 2).sort((a, b) => score(b) - score(a)).slice(0, 3).map(([key]) => key);
+  return Object.entries(data.bigrams).filter(([key, s]) => isValidBigram(key) && s.attempts >= 2).sort((a, b) => score(b) - score(a)).slice(0, 3).map(([key]) => key);
 }
 
 export function generateTargetedPractice(data: AnalyticsData, count = 28) {

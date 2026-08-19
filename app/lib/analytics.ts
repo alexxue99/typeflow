@@ -4,6 +4,10 @@ export function collectsAnalytics(mode: TypingMode): boolean {
   return mode === "flow";
 }
 
+export function isValidBigram(value: string): boolean {
+  return value.length === 2 && !/\s/u.test(value);
+}
+
 function updateStat(current: Stat | undefined, correct: boolean, interval: number): Stat {
   const stat = current ?? { attempts: 0, correct: 0, incorrect: 0, totalTime: 0 };
   return {
@@ -17,7 +21,8 @@ function updateStat(current: Stat | undefined, correct: boolean, interval: numbe
 
 export function recordKeystroke(data: AnalyticsData, expected: string, typed: string, previous: string, interval: number): AnalyticsData {
   const letters = { ...data.letters, [expected]: updateStat(data.letters[expected], expected === typed, interval) };
-  const bigram = previous && expected !== " " ? previous + expected : "";
+  const candidate = previous + expected;
+  const bigram = isValidBigram(candidate) ? candidate : "";
   const bigrams = bigram ? { ...data.bigrams, [bigram]: updateStat(data.bigrams[bigram], expected === typed, interval) } : data.bigrams;
   return { ...data, letters, bigrams };
 }

@@ -9,7 +9,7 @@ export type TypingMode = "flow" | "zen" | "freedom" | "workout" | "practice" | "
 export type Theme = "light" | "dark" | "paper" | "forest" | "ocean" | "lavender" | "contrast";
 export type CaretAppearance = "highlight" | "underline" | "underline-letter" | "invisible";
 export type KeyboardLayout = "qwerty" | "dvorak";
-export type Page = "home" | "type" | "analytics" | "settings" | "help";
+export type Page = "home" | "type" | "stats" | "analytics" | "settings" | "help" | "sign-in" | "sign-up";
 
 export interface Settings {
   mapping: FingerMapping;
@@ -65,7 +65,7 @@ export type LeaderboardMode = Extract<TypingMode, "flow" | "zen" | "freedom" | "
 
 export interface LeaderboardEntry {
   rank: number;
-  initials: string;
+  username: string;
   score: number;
   accuracy: number;
   elapsed: number;
@@ -76,4 +76,11 @@ export interface PersonalBest {
   score: number;
   accuracy: number;
   elapsed: number;
+}
+
+export interface UserBest extends PersonalBest {
+  mode: LeaderboardMode;
+  configKey: string;
+  configLabel: string;
+  updatedAt: string;
 }

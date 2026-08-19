@@ -7,13 +7,14 @@ export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
   const host = requestHeaders.get("host") ?? "localhost:3000";
   const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  const image = `${protocol}://${host}/og.png`;
+  const image = "/icon.svg";
   return {
+    metadataBase: new URL(`${protocol}://${host}`),
     title: "typeflow",
     description: "Calm, adaptive typing practice that stays on your device.",
-    icons: { icon: "/icon.svg" },
+    icons: { icon: [image] },
     openGraph: { title: "typeflow", description: "Find your rhythm. Build your flow.", images: [image] },
-    twitter: { card: "summary_large_image", images: [image] },
+    twitter: { card: "summary_large_image", images: ["/twitter-image.png"] },
   };
 }
 

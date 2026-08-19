@@ -8,7 +8,7 @@ export function HomePage({ onStart }: { onStart: (mode: TypingMode) => void }) {
       <h1>Find your rhythm.<br /><em>Build your flow.</em></h1>
       <p className="lead">A place to practice smooth, relaxed typing.</p>
       <div className="mode-grid">
-        {MODES.map((item, index) => (
+        {MODES.map((item) => (
           <article className={`mode-card`} key={item.id}>
             <span className="mode-icon">{item.icon}</span>
             <h2>{item.title}</h2><p>{item.home}</p>
@@ -16,7 +16,7 @@ export function HomePage({ onStart }: { onStart: (mode: TypingMode) => void }) {
           </article>
         ))}
       </div>
-      <div className="home-note"><span>⌁</span><p><strong>Practice that adapts.</strong><br />After a few Flow sessions, Practice mode emphasizes the letters and pairs that need more attention.</p></div>
+      {/*<div className="home-note"><span>⌁</span><p><strong>Practice that adapts.</strong><br />After a few Flow sessions, Practice mode emphasizes the letters and pairs that need more attention.</p></div>*/}
     </section>
   );
 }
