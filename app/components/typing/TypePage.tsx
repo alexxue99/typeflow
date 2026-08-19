@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/refs -- The session hook intentionally exposes its input ref and event handlers to its page component. */
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { calculateResult, collectsAnalytics, recordKeystroke } from "../../lib/analytics";
-import { consumeBlockLetter, findIncompleteBlockLetters } from "../../lib/freedom";
+import { calculateFreedomWpm, consumeBlockLetter, findIncompleteBlockLetters } from "../../lib/freedom";
 import { generateExercise, generateZenSequence, rankTrouble } from "../../lib/generators";
 import { advanceToNextWord, backspaceTypedCharacters, isExtraWordCharacter } from "../../lib/typing";
 import type { AnalyticsData, Settings, TypingMode } from "../../lib/types";
@@ -195,6 +195,7 @@ function useFreedomSession(mode: TypingMode, settings: Settings) {
   const [incomplete, setIncomplete] = useState<boolean[][]>(() => blocks.map((block) => Array(block.length).fill(false)));
   const [currentBlock, setCurrentBlock] = useState(0);
   const [history, setHistory] = useState<FreedomHit[]>([]);
+  const [spaceHits, setSpaceHits] = useState(0);
   const [attempts, setAttempts] = useState(0);
   const [misses, setMisses] = useState(0);
   const [elapsed, setElapsed] = useState(0);
@@ -204,7 +205,7 @@ function useFreedomSession(mode: TypingMode, settings: Settings) {
   const panelRef = useRef<HTMLDivElement>(null);
   const hits = history.length;
   const accuracy = Math.round(hits / Math.max(1, attempts) * 100);
-  const wpm = Math.round((hits / 5) / Math.max(elapsed / 60, 1 / 60));
+  const wpm = calculateFreedomWpm(hits, spaceHits, elapsed);
   const remaining = Math.max(0, settings.duration - elapsed);
   const totalLetters = blocks.reduce((sum, block) => sum + block.length, 0);
   const appendBlocks = useCallback(() => {
@@ -223,6 +224,7 @@ function useFreedomSession(mode: TypingMode, settings: Settings) {
     setIncomplete(nextBlocks.map((block) => Array(block.length).fill(false)));
     setCurrentBlock(0);
     setHistory([]);
+    setSpaceHits(0);
     setAttempts(0);
     setMisses(0);
     setElapsed(0);
@@ -252,6 +254,7 @@ function useFreedomSession(mode: TypingMode, settings: Settings) {
     if (event.key === " " || event.key === "Spacebar") {
       event.preventDefault();
       if (status === "idle") { setStatus("active"); startedAt.current = performance.now(); }
+      setSpaceHits((value) => value + 1);
       setIncomplete((value) => value.map((row, index) => index === currentBlock ? findIncompleteBlockLetters(consumed[currentBlock]) : row));
       setFeedback("");
       if (currentBlock === blocks.length - 1) {
@@ -298,7 +301,7 @@ function useFreedomSession(mode: TypingMode, settings: Settings) {
     blocks, consumed, incomplete, currentBlock, status, elapsed, accuracy, wpm, remaining, restart, onKey, message, panelRef,
     append: appendBlocks,
     focus: () => panelRef.current?.focus({ preventScroll: true }),
-    characterCount: hits,
+    characterCount: hits + spaceHits,
     progress: Math.round(hits / Math.max(1, totalLetters) * 100),
   };
 }

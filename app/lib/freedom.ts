@@ -9,3 +9,7 @@ export function consumeBlockLetter(block: string, consumed: boolean[], key: stri
 export function findIncompleteBlockLetters(consumed: boolean[]): boolean[] {
   return consumed.map((used) => !used);
 }
+
+export function calculateFreedomWpm(letterHits: number, spaceHits: number, elapsedSeconds: number): number {
+  return Math.round(((letterHits + spaceHits) / 5) / Math.max(elapsedSeconds / 60, 1 / 60));
+}
