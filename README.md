@@ -25,38 +25,16 @@ Settings and typing analytics stay in the user's browser. Authenticated leaderbo
 - A User stats page with the signed-in user's best result for every mode and competitive setting combination.
 - Responsive, keyboard-accessible interface.
 
-## Getting started
+## Technology stack
 
-### Requirements
-
-- Node.js 22.13 or newer
-- pnpm
-
-### Run locally
-
-```bash
-pnpm install
-pnpm dev
-```
-
-Open the local address printed by the development server.
-
-### Leaderboard database
-
-Connect a Neon Postgres database to the Vercel project and expose its pooled connection string as `DATABASE_URL`. Use `DATABASE_URL_UNPOOLED` for Drizzle migrations. For local development, `neon env pull` writes the linked branch's managed variables to `.env.local`; `.env.example` documents only the variables this app reads. Apply the SQL migration stored in `drizzle/` before using the leaderboard.
-
-Enable Neon Auth by setting `NEON_AUTH_BASE_URL` from Neon and creating a private `NEON_AUTH_COOKIE_SECRET` of at least 32 characters in both `.env.local` and Vercel. Without those two values, account controls are hidden and scores cannot be saved. Leaderboards remain publicly readable.
-
-## Project structure
-
-```text
-app/
-  components/       App shell and typing-mode interfaces
-  lib/              Exercise generation, analytics, storage, and shared logic
-  globals.css       Themes, layout, and responsive styles
-tests/               Unit and behavior tests
-```
+- **Framework:** Next.js 16 with the App Router
+- **UI:** React 19, TypeScript, and Tailwind CSS 4
+- **Database:** Neon Postgres using the Neon serverless driver
+- **Authentication:** Neon Auth
+- **Data access and migrations:** Drizzle ORM and Drizzle Kit
+- **Testing and code quality:** Vitest and ESLint
+- **Package management:** pnpm
 
 ## Current version
 
-Version 0.2.0
+Version 0.2.1

@@ -1,12 +1,11 @@
-import { useState } from "react";
 import { FINGER_LABELS } from "../../lib/defaults";
 import { FINGERS, type Finger, type Settings, type TypingMode } from "../../lib/types";
 import { StableSelect } from "./StableSelect";
 
 type Props = { mode: TypingMode; settings: Settings; setSettings: (settings: Settings) => void; onRestart: (settings: Settings) => void };
+const COUNT_OPTIONS = [25, 50, 75, 100];
 
 export function ModeSettings({ mode, settings, setSettings, onRestart }: Props) {
-  const [wordCountInput, setWordCountInput] = useState<string | null>(null);
   const update = <K extends keyof Settings>(key: K, value: Settings[K]) => {
     const nextSettings = { ...settings, [key]: value };
     setSettings(nextSettings);
@@ -22,15 +21,7 @@ export function ModeSettings({ mode, settings, setSettings, onRestart }: Props) 
     <div className="mode-settings-grid">
       <label>Session type<StableSelect value={settings.sessionType} onChange={(e) => update("sessionType", e.target.value as Settings["sessionType"])}><option value="timed">Timed</option><option value="words">{countSetting}</option><option value="endless">Endless</option></StableSelect></label>
       {settings.sessionType === "timed" && <label>Timer duration<StableSelect value={settings.duration} onChange={(e) => update("duration", Number(e.target.value))}>{[15, 30, 60, 120].map((n) => <option key={n} value={n}>{n} seconds</option>)}</StableSelect></label>}
-      {settings.sessionType === "words" && <label>{countName}<input type="number" min="1" max="1000" value={wordCountInput ?? settings.wordCount} onFocus={(e) => setWordCountInput(e.target.value)} onChange={(e) => {
-        setWordCountInput(e.target.value);
-        if (e.target.value !== "") update("wordCount", Math.max(1, Number(e.target.value)));
-      }} onBlur={() => {
-        if (wordCountInput === "") {
-          update("wordCount", 25);
-        }
-        setWordCountInput(null);
-      }} /></label>}
+      {settings.sessionType === "words" && <label>{countName}<StableSelect value={settings.wordCount} onChange={(e) => update("wordCount", Number(e.target.value))}>{COUNT_OPTIONS.map((count) => <option key={count} value={count}>{count}</option>)}</StableSelect></label>}
       {sequenceMode && <label>Minimum finger gap <strong>{settings.minimumGap === 0 ? "0 (off)" : settings.minimumGap}</strong><input type="range" min="0" max="4" value={settings.minimumGap} onChange={(e) => update("minimumGap", Number(e.target.value))} /></label>}
       {mode === "keyboardshot" && <label>Number of highlighted keys <strong>{settings.keyboardshotTargetCount}</strong><input type="range" min="1" max="6" value={settings.keyboardshotTargetCount} onChange={(e) => update("keyboardshotTargetCount", Number(e.target.value))} /></label>}
       {mode === "keyboardshot" && <label>Keyboard layout<StableSelect value={settings.keyboardshotLayout} onChange={(e) => update("keyboardshotLayout", e.target.value as Settings["keyboardshotLayout"])}><option value="qwerty">QWERTY</option><option value="dvorak">DVORAK</option></StableSelect></label>}
