@@ -16,8 +16,8 @@ export const DEFAULT_MAPPING: FingerMapping = {
 export const DEFAULT_SETTINGS: Settings = {
   mapping: DEFAULT_MAPPING,
   sessionType: "timed",
-  duration: 30,
-  minimumGap: 1,
+  duration: 15,
+  minimumGap: 3,
   wordCount: 25,
   zenBlockSize: 3,
   useStandardLetterFrequency: true,

@@ -7,7 +7,6 @@ const ANALYTICS_KEY = "tactile-analytics-v1";
 export function loadSettings(): Settings {
   try {
     const stored = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? "{}") as Record<string, unknown>;
-    delete stored.checkBetweenWords;
     return { ...DEFAULT_SETTINGS, ...stored } as Settings;
   }
   catch { return DEFAULT_SETTINGS; }
