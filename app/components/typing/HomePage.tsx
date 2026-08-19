@@ -10,7 +10,9 @@ export function HomePage({ onStart }: { onStart: (mode: TypingMode) => void }) {
       <div className="mode-grid">
         {MODES.map((item) => (
           <article className={`mode-card`} key={item.id}>
-            <span className="mode-icon">{item.icon}</span>
+            <span className="mode-icon">
+              {item.id === "zen" ? <span className="zen-mode-glyph">{item.icon}</span> : item.icon}
+            </span>
             <h2>{item.title}</h2><p>{item.home}</p>
             <button onClick={() => onStart(item.id)}>Start {item.title} <span>→</span></button>
           </article>

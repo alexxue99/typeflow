@@ -17,7 +17,6 @@ export interface Settings {
   duration: number;
   minimumGap: number;
   wordCount: number;
-  checkBetweenWords: boolean;
   zenBlockSize: number;
   useStandardLetterFrequency: boolean;
   theme: Theme;

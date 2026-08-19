@@ -19,7 +19,7 @@ export function isFingerGapValid(text: string, gap: number, mapping: FingerMappi
   return true;
 }
 
-export function generateFlowText(mapping: FingerMapping, gap: number, count: number, checkBetweenWords = true) {
+export function generateFlowText(mapping: FingerMapping, gap: number, count: number) {
   const candidates = WORDS.filter((word) => isFingerGapValid(word, gap, mapping));
   if (!candidates.length) {
     return { text: WORDS.slice(0, count).join(" "), warning: "That gap is too restrictive for this word list, so the exercise was gently flow." };
@@ -30,14 +30,12 @@ export function generateFlowText(mapping: FingerMapping, gap: number, count: num
   for (let l = 0; l < count; l += 1) {
     let word = candidates[Math.floor(Math.random() * candidates.length)];
     let attempts = 0;
-    if (checkBetweenWords) {
-      while (!isFingerGapValid(prevWord + word, gap, mapping) && attempts < 1000) {
-        word = candidates[Math.floor(Math.random() * candidates.length)];
-        attempts += 1;
-      }
-      if (attempts >= 1000) {
-        warningFlag = true;
-      }
+    while (!isFingerGapValid(prevWord + word, gap, mapping) && attempts < 1000) {
+      word = candidates[Math.floor(Math.random() * candidates.length)];
+      attempts += 1;
+    }
+    if (attempts >= 1000) {
+      warningFlag = true;
     }
     chosen.push(word);
     prevWord = word;
@@ -46,7 +44,7 @@ export function generateFlowText(mapping: FingerMapping, gap: number, count: num
   return { text: chosen.join(" "), warning: warningFlag ? "That gap is too restrictive for this word list, so the exercise was gently flow." : "" };
 }
 
-export function generateZenSequence(mapping: FingerMapping, gap: number, count: number, checkBetweenWords: boolean, blockSize: number, useStandardLetterFrequency = false, random: () => number = Math.random) {
+export function generateZenSequence(mapping: FingerMapping, gap: number, count: number, enforceAcrossBlocks: boolean, blockSize: number, useStandardLetterFrequency = false, random: () => number = Math.random) {
   const letters = Object.values(mapping).flat();
   const result: string[] = [];
   let prevWord = "";
@@ -64,7 +62,7 @@ export function generateZenSequence(mapping: FingerMapping, gap: number, count: 
     curWord += result[result.length - 1];
     if (blockSize > 0 && (i + 1) % blockSize === 0) {
       result.push(" ");
-      prevWord = checkBetweenWords ? curWord : "";
+      prevWord = enforceAcrossBlocks ? curWord : "";
       curWord = "";
     }
   }
@@ -97,9 +95,9 @@ export function generateTargetedPractice(data: AnalyticsData, count = 28) {
   return { text: Array.from({ length: count }, (_, index) => pool[index % pool.length]).join(" "), targets };
 }
 
-export function generateExercise(mode: TypingMode, mapping: FingerMapping, gap: number, count:number, checkBetweenWords: boolean, block: number, finger: Finger, repeats: number, analytics: AnalyticsData, useStandardLetterFrequency = false) {
-  if (mode === "zen" || mode === "freedom") return { text: generateZenSequence(mapping, gap, count, checkBetweenWords && mode === "zen", block, useStandardLetterFrequency), warning: "" };
+export function generateExercise(mode: TypingMode, mapping: FingerMapping, gap: number, count:number, block: number, finger: Finger, repeats: number, analytics: AnalyticsData, useStandardLetterFrequency = false) {
+  if (mode === "zen" || mode === "freedom") return { text: generateZenSequence(mapping, gap, count, mode === "zen", block, useStandardLetterFrequency), warning: "" };
   if (mode === "workout") return { text: generateWorkoutSequence(mapping, finger, count, repeats), warning: "" };
   if (mode === "practice") return { ...generateTargetedPractice(analytics, count), warning: "" };
-  return generateFlowText(mapping, gap, count, checkBetweenWords);
+  return generateFlowText(mapping, gap, count);
 }

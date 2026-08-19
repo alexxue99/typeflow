@@ -88,7 +88,7 @@ function SequentialTypingPage(props: TypePageProps) {
 }
 
 function useTypingSession({ mode, settings, analytics, setAnalytics }: Omit<TypePageProps, "setMode" | "setSettings" | "username" | "authAvailable" | "onSignIn">) {
-  const createExercise = (nextSettings = settings) => generateExercise(mode, nextSettings.mapping, nextSettings.minimumGap, nextSettings.wordCount, nextSettings.checkBetweenWords && mode !== "freedom", nextSettings.zenBlockSize, nextSettings.workoutFinger, nextSettings.workoutRepeats, analytics, nextSettings.useStandardLetterFrequency);
+  const createExercise = (nextSettings = settings) => generateExercise(mode, nextSettings.mapping, nextSettings.minimumGap, nextSettings.wordCount, nextSettings.zenBlockSize, nextSettings.workoutFinger, nextSettings.workoutRepeats, analytics, nextSettings.useStandardLetterFrequency);
   const [exercise, setExercise] = useState(createExercise);
   const [typed, setTyped] = useState<string[]>([]);
   const [status, setStatus] = useState<"idle" | "active" | "done">("idle");

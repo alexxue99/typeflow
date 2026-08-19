@@ -79,7 +79,7 @@ export default function TypingApp({ authAvailable = false, username = null }: { 
         {page === "sign-in" && <section className="auth-page in-app-auth-page"><SignInForm onHome={() => setPage("home")} onSwitch={() => setPage("sign-up")} onSuccess={finishAuth} /></section>}
         {page === "sign-up" && <section className="auth-page in-app-auth-page"><SignUpForm onHome={() => setPage("home")} onSwitch={() => setPage("sign-in")} onSuccess={finishAuth} /></section>}
       </main>
-      <footer><span></span><span>Version 0.2.1</span></footer>
+      <footer><span></span><span>Version 0.2.2</span></footer>
     </div>
   );
 }

@@ -37,13 +37,12 @@ export function createLeaderboardConfig(mode: LeaderboardMode, settings: Setting
   } else {
     rules = {
       gap: settings.minimumGap,
-      ...(mode === "flow" || mode === "zen" ? { betweenWords: settings.checkBetweenWords } : {}),
+      ...(mode === "flow" || mode === "zen" ? { betweenWords: true } : {}),
       ...(mode === "zen" || mode === "freedom" ? { blockSize: settings.zenBlockSize, frequency: settings.useStandardLetterFrequency } : {}),
     };
     labels = [
       `finger gap ${settings.minimumGap}`,
       ...(mode === "zen" || mode === "freedom" ? [`block size ${settings.zenBlockSize}`, settings.useStandardLetterFrequency ? "standard letter frequency on" : "standard letter frequency off"] : []),
-      ...(mode === "flow" || mode === "zen" ? [settings.checkBetweenWords ? "check between words on" : "check between words off"] : []),
     ];
   }
 

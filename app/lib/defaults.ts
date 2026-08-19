@@ -19,7 +19,6 @@ export const DEFAULT_SETTINGS: Settings = {
   duration: 30,
   minimumGap: 1,
   wordCount: 25,
-  checkBetweenWords: true,
   zenBlockSize: 3,
   useStandardLetterFrequency: true,
   theme: "ocean",

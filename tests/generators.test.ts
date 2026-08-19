@@ -28,6 +28,10 @@ describe("finger mapping and generation", () => {
     const result = generateFlowText(DEFAULT_MAPPING, 5, 10);
     expect(result.text.length).toBeGreaterThan(0);
   });
+  it("always enforces the finger gap across flow word boundaries", () => {
+    const result = generateFlowText(DEFAULT_MAPPING, 1, 50);
+    expect(isFingerGapValid(result.text, 1, DEFAULT_MAPPING)).toBe(true);
+  });
   it("falls back to a sample practice when analytics are empty", () => {
     expect(generateTargetedPractice(EMPTY_ANALYTICS).targets).toEqual([]);
     expect(generateTargetedPractice(EMPTY_ANALYTICS, 37).text.split(" ")).toHaveLength(37);
