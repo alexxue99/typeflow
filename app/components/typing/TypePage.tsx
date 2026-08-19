@@ -24,6 +24,21 @@ type TypePageProps = {
 };
 
 export function TypePage(props: TypePageProps) {
+  useEffect(() => {
+    const preventSpacebarScroll = (event: KeyboardEvent) => {
+      if (event.key !== " " && event.key !== "Spacebar" && event.code !== "Space") return;
+
+      const target = event.target instanceof Element ? event.target : null;
+      // Preserve the native Space behavior of controls in the test settings.
+      if (target?.closest("button, input, select, textarea, summary, [contenteditable='true']")) return;
+
+      event.preventDefault();
+    };
+
+    window.addEventListener("keydown", preventSpacebarScroll);
+    return () => window.removeEventListener("keydown", preventSpacebarScroll);
+  }, []);
+
   if (props.mode === "keyboardshot") return <KeyboardshotPage {...props} />;
   return <SequentialTypingPage {...props} />;
 }
