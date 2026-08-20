@@ -96,7 +96,7 @@ export function generateTargetedPractice(data: AnalyticsData, count = 28) {
 }
 
 export function generateExercise(mode: TypingMode, mapping: FingerMapping, gap: number, count:number, block: number, finger: Finger, repeats: number, analytics: AnalyticsData, useStandardLetterFrequency = false) {
-  if (mode === "zen" || mode === "freedom") return { text: generateZenSequence(mapping, gap, count, mode === "zen", block, useStandardLetterFrequency), warning: "" };
+  if (mode === "zen" || mode === "cadence") return { text: generateZenSequence(mapping, gap, count, true, block, useStandardLetterFrequency), warning: "" };
   if (mode === "workout") return { text: generateWorkoutSequence(mapping, finger, count, repeats), warning: "" };
   if (mode === "practice") return { ...generateTargetedPractice(analytics, count), warning: "" };
   return generateFlowText(mapping, gap, count);

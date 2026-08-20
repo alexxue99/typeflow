@@ -33,14 +33,14 @@ describe("leaderboard configurations", () => {
 
     expect(createLeaderboardConfig("flow", settings).label).toContain("words 40");
     expect(createLeaderboardConfig("zen", settings).label).toContain("blocks 40");
-    expect(createLeaderboardConfig("freedom", settings).label).toContain("blocks 40");
+    expect(createLeaderboardConfig("cadence", settings).label).toContain("blocks 40");
     expect(createLeaderboardConfig("keyboardshot", settings).label).toContain("targets 40");
   });
 
   it("ranks fixed-length typing sessions by WPM", () => {
     const settings = { ...DEFAULT_SETTINGS, sessionType: "words" as const, wordCount: 25 };
 
-    for (const mode of ["flow", "zen", "freedom"] as const) {
+    for (const mode of ["flow", "zen", "cadence"] as const) {
       const config = createLeaderboardConfig(mode, settings);
       expect(config.scoreKind).toBe("higher");
       expect(config.scoreLabel).toBe("WPM");
@@ -48,6 +48,13 @@ describe("leaderboard configurations", () => {
       expect(JSON.parse(config.key).session).not.toHaveProperty("scoring");
       expect(formatLeaderboardScore(1234, config)).toBe("12.34 WPM");
     }
+  });
+
+  it("labels Cadence boards with every competitive setting in order", () => {
+    const config = createLeaderboardConfig("cadence", { ...DEFAULT_SETTINGS, cadenceDelay: 0.3 });
+
+    expect(config.label).toMatch(new RegExp(`^time ${DEFAULT_SETTINGS.duration}.+delay 0\\.3s.+finger gap ${DEFAULT_SETTINGS.minimumGap}.+block size ${DEFAULT_SETTINGS.zenBlockSize}.+standard letter frequency on$`));
+    expect(JSON.parse(config.key).rules.delay).toBe(0.3);
   });
 
   it("keeps fixed-length Keyboardshot sessions ranked by millisecond time", () => {

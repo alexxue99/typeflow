@@ -38,11 +38,13 @@ export function createLeaderboardConfig(mode: LeaderboardMode, settings: Setting
     rules = {
       gap: settings.minimumGap,
       ...(mode === "flow" || mode === "zen" ? { betweenWords: true } : {}),
-      ...(mode === "zen" || mode === "freedom" ? { blockSize: settings.zenBlockSize, frequency: settings.useStandardLetterFrequency } : {}),
+      ...(mode === "cadence" ? { delay: settings.cadenceDelay } : {}),
+      ...(mode === "zen" || mode === "cadence" ? { blockSize: settings.zenBlockSize, frequency: settings.useStandardLetterFrequency } : {}),
     };
     labels = [
+      ...(mode === "cadence" ? [`delay ${settings.cadenceDelay.toFixed(1)}s`] : []),
       `finger gap ${settings.minimumGap}`,
-      ...(mode === "zen" || mode === "freedom" ? [`block size ${settings.zenBlockSize}`, settings.useStandardLetterFrequency ? "standard letter frequency on" : "standard letter frequency off"] : []),
+      ...(mode === "zen" || mode === "cadence" ? [`block size ${settings.zenBlockSize}`, settings.useStandardLetterFrequency ? "standard letter frequency on" : "standard letter frequency off"] : []),
     ];
   }
 
@@ -70,5 +72,5 @@ export function formatLeaderboardScore(value: number, config: LeaderboardConfig)
 }
 
 export function isLeaderboardMode(mode: string): mode is LeaderboardMode {
-  return mode === "flow" || mode === "zen" || mode === "freedom" || mode === "keyboardshot";
+  return mode === "flow" || mode === "zen" || mode === "cadence" || mode === "keyboardshot";
 }

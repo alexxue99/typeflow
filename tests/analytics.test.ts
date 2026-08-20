@@ -8,7 +8,7 @@ describe("analytics updates", () => {
   });
   it("collects analytics only in Flow mode", () => {
     expect(collectsAnalytics("flow")).toBe(true);
-    expect(["zen", "freedom", "workout", "practice", "keyboardshot"].every((mode) => !collectsAnalytics(mode as Parameters<typeof collectsAnalytics>[0]))).toBe(true);
+    expect(["zen", "cadence", "workout", "practice", "keyboardshot"].every((mode) => !collectsAnalytics(mode as Parameters<typeof collectsAnalytics>[0]))).toBe(true);
   });
   it("updates letter and bigram statistics", () => {
     let data = recordKeystroke(EMPTY_ANALYTICS, "t", "t", "", 120);

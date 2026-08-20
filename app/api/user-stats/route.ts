@@ -13,6 +13,7 @@ export async function GET() {
     const rows = await sql.query(`SELECT mode, config_key, config_label, score, accuracy, elapsed, updated_at
       FROM leaderboard_scores
       WHERE player_key = $1
+        AND mode IN ('flow', 'zen', 'cadence', 'keyboardshot')
       ORDER BY mode ASC, config_label ASC`, [playerKey]);
 
     return NextResponse.json({ username: user.username, bests: rows.map((row) => ({

@@ -1,7 +1,7 @@
 import { createElement, type ReactNode } from "react";
 import type { TypingMode } from "../../lib/types";
 
-const freedomIcon = createElement(
+const cadenceIcon = createElement(
   "svg",
   {
     viewBox: "0 0 24 24",
@@ -14,9 +14,10 @@ const freedomIcon = createElement(
     strokeLinejoin: "round",
     "aria-hidden": true,
   },
-  createElement("circle", { cx: 12, cy: 12, r: 8 }),
-  createElement("path", { d: "M12 4l-3-2M12 4l-3 2" }),
-  createElement("path", { d: "M12 20l-3-2M12 20l-3 2" }),
+  createElement("path", { d: "M9.5 5h5L17 20H7L9.5 5Z" }),
+  createElement("path", { d: "M12 16 16 4" }),
+  createElement("circle", { cx: 16.5, cy: 3.5, r: 1.5 }),
+  createElement("path", { d: "M6 20h12" }),
 );
 
 export const MODES: { id: TypingMode; icon: ReactNode; title: string; header: string, home: string; help: string}[] = [
@@ -26,9 +27,9 @@ export const MODES: { id: TypingMode; icon: ReactNode; title: string; header: st
   { id: "zen", icon: "z", title: "Zen", header: "Focus.",
     home: "Random streams of letters to sharpen your focus.",
     help: "A more serious mode for practicing unusual letter combinations. Use this mode to actively stretch your fingers. Relax your fingers while reaching for the letter combinations."},
-  { id: "freedom", icon: freedomIcon, title: "Freedom", header: "Let your fingers fly.",
-    home: "Clear blocks of random letters in any order you choose.",
-    help: "A mode to practice fast typing and finger preparation without worrying about timing between fingers. Conciously prepare the letter combinations in advance before starting each block. Clear each block as quickly as you can."},
+  { id: "cadence", icon: cadenceIcon, title: "Cadence", header: "Feel the rhythm.",
+    home: "Type random blocks that advance on a steady rhythm.",
+    help: "A rhythmic mode for reducing the delays between your fingers. Use the delay between blocks to prepare your fingers to type each block in a single beat."},
   { id: "keyboardshot", icon: "⌨", title: "Keyboardshot", header: "React quickly.",
     home: "React quickly to multiple highlighted keys at a time.",
     help: "A fun mode inspired by gridshot from fps games. Use this mode to increase your coordination and dexterity in moving multiple fingers at a time."},

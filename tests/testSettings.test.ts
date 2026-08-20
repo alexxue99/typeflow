@@ -26,16 +26,20 @@ describe("withDefaultTestSettings", () => {
     });
   });
 
-  it("resets zen and freedom-specific test settings", () => {
-    for (const mode of ["zen", "freedom"] as const) {
+  it("resets zen and cadence-specific test settings", () => {
+    for (const mode of ["zen", "cadence"] as const) {
       const reset = withDefaultTestSettings({
         ...DEFAULT_SETTINGS,
         zenBlockSize: 9,
+        cadenceDelay: 0.5,
+        cadenceBlockSound: true,
         useStandardLetterFrequency: false,
       }, mode);
 
       expect(reset.zenBlockSize).toBe(DEFAULT_SETTINGS.zenBlockSize);
       expect(reset.useStandardLetterFrequency).toBe(DEFAULT_SETTINGS.useStandardLetterFrequency);
+      expect(reset.cadenceDelay).toBe(mode === "cadence" ? DEFAULT_SETTINGS.cadenceDelay : 0.5);
+      expect(reset.cadenceBlockSound).toBe(true);
     }
   });
 

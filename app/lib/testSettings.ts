@@ -16,12 +16,13 @@ export function withDefaultTestSettings(settings: Settings, mode: TypingMode): S
     };
   }
 
-  if (mode === "zen" || mode === "freedom") {
+  if (mode === "zen" || mode === "cadence") {
     return {
       ...settings,
       ...DEFAULT_SESSION_SETTINGS,
       minimumGap: DEFAULT_SETTINGS.minimumGap,
       zenBlockSize: DEFAULT_SETTINGS.zenBlockSize,
+      ...(mode === "cadence" ? { cadenceDelay: DEFAULT_SETTINGS.cadenceDelay } : {}),
       useStandardLetterFrequency: DEFAULT_SETTINGS.useStandardLetterFrequency,
     };
   }

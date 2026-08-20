@@ -15,7 +15,7 @@ function formatScore(best: UserBest) {
 const MODE_OPTIONS: { value: LeaderboardMode; label: string }[] = [
   { value: "flow", label: "Flow" },
   { value: "zen", label: "Zen" },
-  { value: "freedom", label: "Freedom" },
+  { value: "cadence", label: "Cadence" },
   { value: "keyboardshot", label: "Keyboardshot" },
 ];
 
@@ -78,7 +78,7 @@ export function UserStatsPage({ username, authAvailable, onSignIn }: { username:
     <div className="page-title"><div><span className="eyebrow">User stats</span><h1>{username}&apos;s bests.</h1><p>Your best saved performance for every competitive mode and setting combination.</p></div></div>
     {error ? <div className="empty-state" role="status"><h2>Stats unavailable.</h2><p>{error}</p></div>
       : loading ? <p className="leaderboard-message">Loading your bests…</p>
-        : bests.length === 0 ? <div className="empty-state"><h2>No saved performances yet.</h2><p>Complete a Flow, Zen, Freedom, or Keyboardshot session while signed in.</p></div>
+        : bests.length === 0 ? <div className="empty-state"><h2>No saved performances yet.</h2><p>Complete a Flow, Zen, Cadence, or Keyboardshot session while signed in.</p></div>
           : <>
             <div className="user-stats-filters" aria-label="Filter personal bests">
               <label>Game mode<select value={modeFilter} onChange={(event) => { setModeFilter(event.target.value as LeaderboardMode | "all"); setAmountFilter("all"); }}><option value="all">All modes</option>{MODE_OPTIONS.map((mode) => <option key={mode.value} value={mode.value}>{mode.label}</option>)}</select></label>

@@ -5,7 +5,7 @@ export const FINGERS = [
 
 export type Finger = (typeof FINGERS)[number];
 export type FingerMapping = Record<Finger, string[]>;
-export type TypingMode = "flow" | "zen" | "freedom" | "workout" | "practice" | "keyboardshot";
+export type TypingMode = "flow" | "zen" | "cadence" | "workout" | "practice" | "keyboardshot";
 export type Theme = "light" | "dark" | "paper" | "forest" | "ocean" | "lavender" | "contrast";
 export type CaretAppearance = "highlight" | "underline" | "underline-letter" | "invisible";
 export type KeyboardLayout = "qwerty" | "dvorak";
@@ -18,6 +18,8 @@ export interface Settings {
   minimumGap: number;
   wordCount: number;
   zenBlockSize: number;
+  cadenceDelay: number;
+  cadenceBlockSound: boolean;
   useStandardLetterFrequency: boolean;
   theme: Theme;
   fontSize: number;
@@ -60,7 +62,7 @@ export interface AnalyticsData {
   sessions: SessionResult[];
 }
 
-export type LeaderboardMode = Extract<TypingMode, "flow" | "zen" | "freedom" | "keyboardshot">;
+export type LeaderboardMode = Extract<TypingMode, "flow" | "zen" | "cadence" | "keyboardshot">;
 
 export interface LeaderboardEntry {
   rank: number;

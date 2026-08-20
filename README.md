@@ -9,7 +9,7 @@ Settings and typing analytics stay in the user's browser. Authenticated leaderbo
 - Six practice modes:
   - **Flow** generates real words while separating repeated uses of the same finger.
   - **Zen** generates focused blocks of random letters.
-  - **Freedom** lets you clear each letter block in any order.
+  - **Cadence** advances ordered letter blocks automatically after a configurable delay.
   - **Keyboardshot** turns highlighted keys into a reaction and accuracy game.
   - **Workout** concentrates practice on a selected finger.
   - **Practice** uses Flow analytics to emphasize difficult letters and bigrams.
@@ -21,7 +21,7 @@ Settings and typing analytics stay in the user's browser. Authenticated leaderbo
 - Optional standard English letter-frequency weighting and Keyboardshot sounds.
 - Local analytics for recent Flow sessions, error-prone letters, and slow bigrams.
 - Email/password accounts powered by Neon Auth.
-- Shared username-based top-10 leaderboards for Flow, Zen, Freedom, and Keyboardshot; only signed-in users can save scores.
+- Shared username-based top-10 leaderboards for Flow, Zen, Cadence, and Keyboardshot; only signed-in users can save scores.
 - A User stats page with the signed-in user's best result for every mode and competitive setting combination.
 - Responsive, keyboard-accessible interface.
 
@@ -37,4 +37,4 @@ Settings and typing analytics stay in the user's browser. Authenticated leaderbo
 
 ## Current version
 
-Version 0.2.7
+Version 0.3.0
