@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateFreedomWpm, consumeBlockLetter, findIncompleteBlockLetters, isFreedomBlockComplete } from "../app/lib/freedom";
+import { calculateFreedomWpmScaled, consumeBlockLetter, findIncompleteBlockLetters, isFreedomBlockComplete } from "../app/lib/freedom";
 
 describe("Freedom blocks", () => {
   it("accepts letters in any order", () => {
@@ -23,6 +23,9 @@ describe("Freedom blocks", () => {
     expect(isFreedomBlockComplete([true, true, true])).toBe(true);
   });
   it("includes spaces in WPM", () => {
-    expect(calculateFreedomWpm(45, 5, 60)).toBe(10);
+    expect(calculateFreedomWpmScaled(45, 5, 60)).toBe(1000);
+  });
+  it("keeps two decimal places of WPM precision", () => {
+    expect(calculateFreedomWpmScaled(45, 5, 61)).toBe(984);
   });
 });

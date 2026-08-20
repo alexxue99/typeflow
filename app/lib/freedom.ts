@@ -14,6 +14,6 @@ export function isFreedomBlockComplete(consumed: boolean[]): boolean {
   return consumed.length > 0 && consumed.every(Boolean);
 }
 
-export function calculateFreedomWpm(letterHits: number, spaceHits: number, elapsedSeconds: number): number {
-  return Math.round(((letterHits + spaceHits) / 5) / Math.max(elapsedSeconds / 60, 1 / 60));
+export function calculateFreedomWpmScaled(letterHits: number, spaceHits: number, elapsedSeconds: number): number {
+  return Math.round((((letterHits + spaceHits) / 5) / Math.max(elapsedSeconds / 60, 1 / 60)) * 100);
 }

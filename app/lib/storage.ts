@@ -13,7 +13,16 @@ export function loadSettings(): Settings {
 }
 export function saveSettings(settings: Settings) { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
 export function loadAnalytics(): AnalyticsData {
-  try { return { ...EMPTY_ANALYTICS, ...JSON.parse(localStorage.getItem(ANALYTICS_KEY) ?? "{}") }; }
+  try {
+    const stored = JSON.parse(localStorage.getItem(ANALYTICS_KEY) ?? "{}") as Partial<Omit<AnalyticsData, "sessions">> & {
+      sessions?: Array<Partial<AnalyticsData["sessions"][number]> & { wpm?: number }>;
+    };
+    const sessions = (stored.sessions ?? []).map(({ wpm, ...session }) => ({
+      ...session,
+      wpm_scaled: typeof session.wpm_scaled === "number" ? session.wpm_scaled : Math.round((wpm ?? 0) * 100),
+    })) as AnalyticsData["sessions"];
+    return { ...EMPTY_ANALYTICS, ...stored, sessions };
+  }
   catch { return EMPTY_ANALYTICS; }
 }
 export function saveAnalytics(data: AnalyticsData) { localStorage.setItem(ANALYTICS_KEY, JSON.stringify(data)); }

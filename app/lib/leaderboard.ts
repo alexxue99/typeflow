@@ -65,7 +65,8 @@ export function isTimeLeaderboard(mode: string, configKey: string) {
 }
 
 export function formatLeaderboardScore(value: number, config: LeaderboardConfig) {
-  return config.scoreKind === "time" ? `${(value / 1000).toFixed(3)}s` : `${value} ${config.scoreLabel}`;
+  const displayedValue = config.scoreLabel === "WPM" ? value / 100 : value;
+  return config.scoreKind === "time" ? `${(value / 1000).toFixed(3)}s` : `${displayedValue} ${config.scoreLabel}`;
 }
 
 export function isLeaderboardMode(mode: string): mode is LeaderboardMode {

@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/refs -- The session hook intentionally exposes its input ref and event handlers to its page component. */
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { calculateResult, collectsAnalytics, recordKeystroke } from "../../lib/analytics";
-import { calculateFreedomWpm, consumeBlockLetter, findIncompleteBlockLetters, isFreedomBlockComplete } from "../../lib/freedom";
+import { calculateFreedomWpmScaled, consumeBlockLetter, findIncompleteBlockLetters, isFreedomBlockComplete } from "../../lib/freedom";
 import { generateExercise, generateZenSequence, rankTrouble } from "../../lib/generators";
 import { advanceToNextWord, backspaceTypedCharacters, isExtraWordCharacter } from "../../lib/typing";
 import type { AnalyticsData, Settings, TypingMode } from "../../lib/types";
@@ -71,7 +71,7 @@ function SequentialTypingPage(props: TypePageProps) {
       {!isFreedom && sequentialSession.exercise.warning && <div className="notice">{sequentialSession.exercise.warning}</div>}
       {mode === "practice" && <div className="notice">{practiceTargets.length ? `This practice emphasizes "${practiceTargets.join(", ")}" based on your recent Flow performances.` : "Complete a few Flow sessions to unlock personalized exercises. This sample session is not added to your analytics."}</div>}
       <div className="stats-strip">
-        <Metric label="WPM" value={session.wpm} /><Metric label="Accuracy" value={`${session.accuracy}%`} />
+        <Metric label="WPM" value={Math.round(session.wpm_scaled / 100)} /><Metric label="Accuracy" value={`${session.accuracy}%`} />
         <Metric label={settings.sessionType === "time" ? "Remaining" : "Elapsed"} value={settings.sessionType === "time" ? `${session.remaining}s` : settings.sessionType === "words" ? `${(session.elapsedMilliseconds / 1000).toFixed(3)}s` : `${session.elapsed}s`} />
         <Metric label="Characters" value={session.characterCount} /><Metric label="Progress" value={settings.sessionType === "words" ? `${session.progress}%` : "—"} />
       </div>
@@ -101,8 +101,8 @@ function SequentialTypingPage(props: TypePageProps) {
           <p>{session.status === "idle" ? "Click anywhere here, then start typing. " : ""}{"Use Backspace to fix typos. "}Press {settings.resetHotkey} to reset.</p>
         )}
       </div>
-      {session.status === "done" && <div className="result-card"><div><span className="eyebrow">Good job</span><h2>{settings.sessionType === "words" ? `${(session.elapsedMilliseconds / 1000).toFixed(3)}s` : `${session.wpm} WPM`} · {session.accuracy}% accuracy</h2></div><div className="session-actions"><button className="icon-button" onClick={() => session.restart()} aria-label="Restart session">↻</button></div></div>}
-      {(mode === "flow" || mode === "zen" || mode === "freedom") && <Leaderboard mode={mode} settings={settings} done={session.status === "done"} score={settings.sessionType === "words" ? session.elapsedMilliseconds : session.wpm} accuracy={session.accuracy} elapsed={settings.sessionType === "words" ? session.elapsedMilliseconds : session.elapsed} username={props.username} authAvailable={props.authAvailable} onSignIn={props.onSignIn} />}
+      {session.status === "done" && <div className="result-card"><div><span className="eyebrow">Good job</span><h2>{settings.sessionType === "words" ? `${(session.elapsedMilliseconds / 1000).toFixed(3)}s` : `${session.wpm_scaled / 100} WPM`} · {session.accuracy}% accuracy</h2></div><div className="session-actions"><button className="icon-button" onClick={() => session.restart()} aria-label="Restart session">↻</button></div></div>}
+      {(mode === "flow" || mode === "zen" || mode === "freedom") && <Leaderboard mode={mode} settings={settings} done={session.status === "done"} score={settings.sessionType === "words" ? session.elapsedMilliseconds : session.wpm_scaled} accuracy={session.accuracy} elapsed={settings.sessionType === "words" ? session.elapsedMilliseconds : session.elapsed} username={props.username} authAvailable={props.authAvailable} onSignIn={props.onSignIn} />}
     </section>
   );
 }
@@ -119,7 +119,7 @@ function useTypingSession({ mode, settings, analytics, setAnalytics }: Omit<Type
   const correct = typed.filter((char, index) => char === exercise.text[index]).length;
   const accuracy = Math.round(correct / Math.max(1, typed.length) * 100);
   const elapsed = Math.floor(elapsedMilliseconds / 1000);
-  const wpm = Math.round((correct / 5) / Math.max(elapsedMilliseconds / 60000, 1 / 60));
+  const wpm_scaled = Math.round(((correct / 5) / Math.max(elapsedMilliseconds / 60000, 1 / 60)) * 100);
   const remaining = Math.max(0, settings.duration - elapsed);
 
   const focusInput = () => inputRef.current?.focus({ preventScroll: true });
@@ -205,7 +205,7 @@ function useTypingSession({ mode, settings, analytics, setAnalytics }: Omit<Type
   };
 
   return {
-    exercise, typed, status, elapsed, elapsedMilliseconds, accuracy, wpm, remaining, inputRef, restart, onKey, appendExercise,
+    exercise, typed, status, elapsed, elapsedMilliseconds, accuracy, wpm_scaled, remaining, inputRef, restart, onKey, appendExercise,
     focus: focusInput,
     characterCount: typed.length,
     progress: Math.round(typed.length / exercise.text.length * 100),
@@ -232,7 +232,7 @@ function useFreedomSession(mode: TypingMode, settings: Settings) {
   const hits = history.length;
   const accuracy = Math.round(hits / Math.max(1, attempts) * 100);
   const elapsed = Math.floor(elapsedMilliseconds / 1000);
-  const wpm = calculateFreedomWpm(hits, spaceHits, elapsedMilliseconds / 1000);
+  const wpm_scaled = calculateFreedomWpmScaled(hits, spaceHits, elapsedMilliseconds / 1000);
   const remaining = Math.max(0, settings.duration - elapsed);
   const totalLetters = blocks.reduce((sum, block) => sum + block.length, 0);
   const appendBlocks = useCallback(() => {
@@ -328,7 +328,7 @@ function useFreedomSession(mode: TypingMode, settings: Settings) {
   };
 
   return {
-    blocks, consumed, incomplete, currentBlock, status, elapsed, elapsedMilliseconds, accuracy, wpm, remaining, restart, onKey, panelRef,
+    blocks, consumed, incomplete, currentBlock, status, elapsed, elapsedMilliseconds, accuracy, wpm_scaled, remaining, restart, onKey, panelRef,
     append: appendBlocks,
     focus: () => panelRef.current?.focus({ preventScroll: true }),
     characterCount: hits + spaceHits,

@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { collectsAnalytics, isValidBigram, recordKeystroke } from "../app/lib/analytics";
+import { calculateResult, collectsAnalytics, isValidBigram, recordKeystroke } from "../app/lib/analytics";
 import { EMPTY_ANALYTICS } from "../app/lib/defaults";
 
 describe("analytics updates", () => {
+  it("stores WPM as a hundredths-scaled integer", () => {
+    expect(calculateResult("flow", 50, 50, 61).wpm_scaled).toBe(984);
+  });
   it("collects analytics only in Flow mode", () => {
     expect(collectsAnalytics("flow")).toBe(true);
     expect(["zen", "freedom", "workout", "practice", "keyboardshot"].every((mode) => !collectsAnalytics(mode as Parameters<typeof collectsAnalytics>[0]))).toBe(true);

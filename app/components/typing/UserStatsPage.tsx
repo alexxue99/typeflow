@@ -8,7 +8,8 @@ type StatsResponse = { username?: string; bests?: UserBest[]; error?: string };
 
 function formatScore(best: UserBest) {
   if (isTimeLeaderboard(best.mode, best.configKey)) return `${(best.score / 1000).toFixed(3)}s`;
-  return `${best.score} ${best.mode === "keyboardshot" ? "points" : "WPM"}`;
+  const score = best.mode === "keyboardshot" ? best.score : best.score / 100;
+  return `${score} ${best.mode === "keyboardshot" ? "points" : "WPM"}`;
 }
 
 const MODE_OPTIONS: { value: LeaderboardMode; label: string }[] = [

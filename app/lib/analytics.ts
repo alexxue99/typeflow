@@ -32,7 +32,7 @@ export function calculateResult(mode: TypingMode, correct: number, attempts: num
     id: crypto.randomUUID(),
     date: new Date().toISOString(),
     mode,
-    wpm: Math.round((correct / 5) / Math.max(elapsedSeconds / 60, 1 / 60)),
+    wpm_scaled: Math.round(((correct / 5) / Math.max(elapsedSeconds / 60, 1 / 60)) * 100),
     accuracy: Math.round((correct / Math.max(1, attempts)) * 100),
     characters: attempts,
   };

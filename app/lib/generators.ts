@@ -22,7 +22,7 @@ export function isFingerGapValid(text: string, gap: number, mapping: FingerMappi
 export function generateFlowText(mapping: FingerMapping, gap: number, count: number) {
   const candidates = WORDS.filter((word) => isFingerGapValid(word, gap, mapping));
   if (!candidates.length) {
-    return { text: WORDS.slice(0, count).join(" "), warning: "That gap is too restrictive for this word list, so the exercise was gently flow." };
+    return { text: WORDS.slice(0, count).join(" "), warning: "That gap is too restrictive for this word list! Words have been randomly generated." };
   }
   const chosen: string[] = [];
   let prevWord = "";
@@ -41,7 +41,7 @@ export function generateFlowText(mapping: FingerMapping, gap: number, count: num
     prevWord = word;
   }
 
-  return { text: chosen.join(" "), warning: warningFlag ? "That gap is too restrictive for this word list, so the exercise was gently flow." : "" };
+  return { text: chosen.join(" "), warning: warningFlag ? "That gap is too restrictive for this word list! Words have been randomly generated." : "" };
 }
 
 export function generateZenSequence(mapping: FingerMapping, gap: number, count: number, enforceAcrossBlocks: boolean, blockSize: number, useStandardLetterFrequency = false, random: () => number = Math.random) {

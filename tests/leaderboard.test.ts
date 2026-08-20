@@ -56,4 +56,9 @@ describe("leaderboard configurations", () => {
     expect(config.scoreLabel).toBe("points");
     expect(isTimeLeaderboard("keyboardshot", config.key)).toBe(false);
   });
+
+  it("formats scaled WPM scores with two-decimal precision", () => {
+    const config = createLeaderboardConfig("flow", DEFAULT_SETTINGS);
+    expect(formatLeaderboardScore(1234, config)).toBe("12.34 WPM");
+  });
 });

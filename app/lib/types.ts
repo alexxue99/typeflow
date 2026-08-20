@@ -49,7 +49,7 @@ export interface SessionResult {
   id: string;
   date: string;
   mode: TypingMode;
-  wpm: number;
+  wpm_scaled: number;
   accuracy: number;
   characters: number;
 }
