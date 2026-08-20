@@ -55,7 +55,7 @@ export function KeyboardshotPage({ setMode, settings, setSettings, username, aut
     if (status !== "active") return;
     const timer = window.setInterval(() => {
       const milliseconds = Math.round(performance.now() - startedAt.current);
-      if (settings.sessionType === "timed" && milliseconds >= settings.duration * 1000) {
+      if (settings.sessionType === "time" && milliseconds >= settings.duration * 1000) {
         setElapsedMilliseconds(settings.duration * 1000);
         setStatus("done");
       } else setElapsedMilliseconds(milliseconds);
@@ -110,7 +110,7 @@ export function KeyboardshotPage({ setMode, settings, setSettings, username, aut
     <div className="mode-tabs">{MODES.map((item) => <button key={item.id} onClick={() => setMode(item.id)} className={item.id === "keyboardshot" ? "active" : ""}>{item.title}</button>)}</div>
     <div className="session-head"><div><span className="eyebrow">Keyboardshot session</span><h1>{status === "done" ? "Session complete." : MODES.find((m) => m.id === "keyboardshot")?.header}</h1></div><div className="session-actions"><button className="icon-button" onClick={() => restart()} aria-label="Restart session">↻</button></div></div>
     <ModeSettings mode="keyboardshot" settings={settings} setSettings={setSettings} onRestart={(nextSettings) => restart(nextSettings)} />
-    <div className="stats-strip"><Metric label="Hits - misses" value={`${2 * hits - attempts}`} /><Metric label="Accuracy" value={`${accuracy}%`} /><Metric label={settings.sessionType === "timed" ? "Remaining" : "Elapsed"} value={settings.sessionType === "timed" ? `${remaining}s` : `${(elapsedMilliseconds / 1000).toFixed(3)}s`} /><Metric label="Streak" value={streak} /><Metric label="Best streak" value={bestStreak} /></div>
+    <div className="stats-strip"><Metric label="Hits - misses" value={`${2 * hits - attempts}`} /><Metric label="Accuracy" value={`${accuracy}%`} /><Metric label={settings.sessionType === "time" ? "Remaining" : "Elapsed"} value={settings.sessionType === "time" ? `${remaining}s` : `${(elapsedMilliseconds / 1000).toFixed(3)}s`} /><Metric label="Streak" value={streak} /><Metric label="Best streak" value={bestStreak} /></div>
     <div ref={panelRef} className="typing-panel keyboardshot-panel" data-status={status} data-glow-fade={settings.keyboardshotGlowFade ? "on" : "off"} tabIndex={0} onKeyDown={onKeyDown} onClick={() => panelRef.current?.focus()} aria-label="Keyboardshot game">
      {/* <p className="keyboardshot-instructions"> {status === "idle" ? "Press any highlighted key to start. Each hit immediately reveals a new target." : ""}</p> */}
       <div className="keyboard" data-layout={settings.keyboardshotLayout} ref={keyboardRef} aria-live="polite">

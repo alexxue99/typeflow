@@ -13,7 +13,7 @@ export type Page = "home" | "type" | "stats" | "analytics" | "settings" | "help"
 
 export interface Settings {
   mapping: FingerMapping;
-  sessionType: "timed" | "words" | "endless";
+  sessionType: "time" | "words" | "endless";
   duration: number;
   minimumGap: number;
   wordCount: number;

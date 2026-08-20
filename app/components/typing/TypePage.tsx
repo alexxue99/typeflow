@@ -72,7 +72,7 @@ function SequentialTypingPage(props: TypePageProps) {
       {mode === "practice" && <div className="notice">{practiceTargets.length ? `This practice emphasizes "${practiceTargets.join(", ")}" based on your recent Flow performances.` : "Complete a few Flow sessions to unlock personalized exercises. This sample session is not added to your analytics."}</div>}
       <div className="stats-strip">
         <Metric label="WPM" value={session.wpm} /><Metric label="Accuracy" value={`${session.accuracy}%`} />
-        <Metric label={settings.sessionType === "timed" ? "Remaining" : "Elapsed"} value={`${settings.sessionType === "timed" ? session.remaining : session.elapsed}s`} />
+        <Metric label={settings.sessionType === "time" ? "Remaining" : "Elapsed"} value={settings.sessionType === "time" ? `${session.remaining}s` : settings.sessionType === "words" ? `${(session.elapsedMilliseconds / 1000).toFixed(3)}s` : `${session.elapsed}s`} />
         <Metric label="Characters" value={session.characterCount} /><Metric label="Progress" value={settings.sessionType === "words" ? `${session.progress}%` : "—"} />
       </div>
       <div
@@ -101,8 +101,8 @@ function SequentialTypingPage(props: TypePageProps) {
           <p>{session.status === "idle" ? "Click anywhere here, then start typing. " : ""}{"Use Backspace to fix typos. "}Press {settings.resetHotkey} to reset.</p>
         )}
       </div>
-      {session.status === "done" && <div className="result-card"><div><span className="eyebrow">Good job</span><h2>{session.wpm} WPM · {session.accuracy}% accuracy</h2></div><div className="session-actions"><button className="icon-button" onClick={() => session.restart()} aria-label="Restart session">↻</button></div></div>}
-      {(mode === "flow" || mode === "zen" || mode === "freedom") && <Leaderboard mode={mode} settings={settings} done={session.status === "done"} score={session.wpm} accuracy={session.accuracy} elapsed={session.elapsed} username={props.username} authAvailable={props.authAvailable} onSignIn={props.onSignIn} />}
+      {session.status === "done" && <div className="result-card"><div><span className="eyebrow">Good job</span><h2>{settings.sessionType === "words" ? `${(session.elapsedMilliseconds / 1000).toFixed(3)}s` : `${session.wpm} WPM`} · {session.accuracy}% accuracy</h2></div><div className="session-actions"><button className="icon-button" onClick={() => session.restart()} aria-label="Restart session">↻</button></div></div>}
+      {(mode === "flow" || mode === "zen" || mode === "freedom") && <Leaderboard mode={mode} settings={settings} done={session.status === "done"} score={settings.sessionType === "words" ? session.elapsedMilliseconds : session.wpm} accuracy={session.accuracy} elapsed={settings.sessionType === "words" ? session.elapsedMilliseconds : session.elapsed} username={props.username} authAvailable={props.authAvailable} onSignIn={props.onSignIn} />}
     </section>
   );
 }
@@ -112,13 +112,14 @@ function useTypingSession({ mode, settings, analytics, setAnalytics }: Omit<Type
   const [exercise, setExercise] = useState(createExercise);
   const [typed, setTyped] = useState<string[]>([]);
   const [status, setStatus] = useState<"idle" | "active" | "done">("idle");
-  const [elapsed, setElapsed] = useState(0);
+  const [elapsedMilliseconds, setElapsedMilliseconds] = useState(0);
   const startedAt = useRef(0);
   const lastKeyAt = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const correct = typed.filter((char, index) => char === exercise.text[index]).length;
   const accuracy = Math.round(correct / Math.max(1, typed.length) * 100);
-  const wpm = Math.round((correct / 5) / Math.max(elapsed / 60, 1 / 60));
+  const elapsed = Math.floor(elapsedMilliseconds / 1000);
+  const wpm = Math.round((correct / 5) / Math.max(elapsedMilliseconds / 60000, 1 / 60));
   const remaining = Math.max(0, settings.duration - elapsed);
 
   const focusInput = () => inputRef.current?.focus({ preventScroll: true });
@@ -131,7 +132,7 @@ function useTypingSession({ mode, settings, analytics, setAnalytics }: Omit<Type
   const restart = (nextSettings = settings) => {
     setExercise(createExercise(nextSettings));
     setTyped([]);
-    setElapsed(0);
+    setElapsedMilliseconds(0);
     setStatus("idle");
     startedAt.current = 0;
     lastKeyAt.current = 0;
@@ -145,9 +146,11 @@ function useTypingSession({ mode, settings, analytics, setAnalytics }: Omit<Type
   useEffect(() => {
     if (status !== "active") return;
     const timer = window.setInterval(() => {
-      const seconds = Math.floor((performance.now() - startedAt.current) / 1000);
-      setElapsed(seconds);
-      if (settings.sessionType === "timed" && seconds >= settings.duration) setStatus("done");
+      const milliseconds = Math.round(performance.now() - startedAt.current);
+      if (settings.sessionType === "time" && milliseconds >= settings.duration * 1000) {
+        setElapsedMilliseconds(settings.duration * 1000);
+        setStatus("done");
+      } else setElapsedMilliseconds(milliseconds);
     }, 200);
     return () => window.clearInterval(timer);
   }, [status, settings.duration, settings.sessionType]);
@@ -194,12 +197,15 @@ function useTypingSession({ mode, settings, analytics, setAnalytics }: Omit<Type
     if (next.length >= exercise.text.length) {
       if (settings.sessionType !== "words") {
         appendExercise();
-      } else setStatus("done");
+      } else {
+        setElapsedMilliseconds(Math.round(now - startedAt.current));
+        setStatus("done");
+      }
     }
   };
 
   return {
-    exercise, typed, status, elapsed, accuracy, wpm, remaining, inputRef, restart, onKey, appendExercise,
+    exercise, typed, status, elapsed, elapsedMilliseconds, accuracy, wpm, remaining, inputRef, restart, onKey, appendExercise,
     focus: focusInput,
     characterCount: typed.length,
     progress: Math.round(typed.length / exercise.text.length * 100),
@@ -218,14 +224,15 @@ function useFreedomSession(mode: TypingMode, settings: Settings) {
   const [spaceHits, setSpaceHits] = useState(0);
   const [attempts, setAttempts] = useState(0);
   const [misses, setMisses] = useState(0);
-  const [elapsed, setElapsed] = useState(0);
+  const [elapsedMilliseconds, setElapsedMilliseconds] = useState(0);
   const [status, setStatus] = useState<"idle" | "active" | "done">("idle");
   const [feedback, setFeedback] = useState<"hit" | "miss" | "">("");
   const startedAt = useRef(0);
   const panelRef = useRef<HTMLDivElement>(null);
   const hits = history.length;
   const accuracy = Math.round(hits / Math.max(1, attempts) * 100);
-  const wpm = calculateFreedomWpm(hits, spaceHits, elapsed);
+  const elapsed = Math.floor(elapsedMilliseconds / 1000);
+  const wpm = calculateFreedomWpm(hits, spaceHits, elapsedMilliseconds / 1000);
   const remaining = Math.max(0, settings.duration - elapsed);
   const totalLetters = blocks.reduce((sum, block) => sum + block.length, 0);
   const appendBlocks = useCallback(() => {
@@ -247,7 +254,7 @@ function useFreedomSession(mode: TypingMode, settings: Settings) {
     setSpaceHits(0);
     setAttempts(0);
     setMisses(0);
-    setElapsed(0);
+    setElapsedMilliseconds(0);
     setStatus("idle");
     setFeedback("");
     startedAt.current = 0;
@@ -261,9 +268,11 @@ function useFreedomSession(mode: TypingMode, settings: Settings) {
   useEffect(() => {
     if (status !== "active") return;
     const timer = window.setInterval(() => {
-      const seconds = Math.floor((performance.now() - startedAt.current) / 1000);
-      setElapsed(seconds);
-      if (settings.sessionType === "timed" && seconds >= settings.duration) setStatus("done");
+      const milliseconds = Math.round(performance.now() - startedAt.current);
+      if (settings.sessionType === "time" && milliseconds >= settings.duration * 1000) {
+        setElapsedMilliseconds(settings.duration * 1000);
+        setStatus("done");
+      } else setElapsedMilliseconds(milliseconds);
     }, 200);
     return () => window.clearInterval(timer);
   }, [status, settings.duration, settings.sessionType]);
@@ -273,7 +282,8 @@ function useFreedomSession(mode: TypingMode, settings: Settings) {
     if (status === "done") return;
     if (event.key === " " || event.key === "Spacebar") {
       event.preventDefault();
-      if (status === "idle") { setStatus("active"); startedAt.current = performance.now(); }
+      const now = performance.now();
+      if (status === "idle") { setStatus("active"); startedAt.current = now; }
       setSpaceHits((value) => value + 1);
       setIncomplete((value) => value.map((row, index) => index === currentBlock ? findIncompleteBlockLetters(consumed[currentBlock]) : row));
       setFeedback("");
@@ -281,7 +291,10 @@ function useFreedomSession(mode: TypingMode, settings: Settings) {
         if (settings.sessionType !== "words") {
           appendBlocks();
           setCurrentBlock((value) => value + 1);
-        } else setStatus("done");
+        } else {
+          setElapsedMilliseconds(Math.round(now - startedAt.current));
+          setStatus("done");
+        }
       } else setCurrentBlock((value) => value + 1);
       return;
     }
@@ -298,7 +311,8 @@ function useFreedomSession(mode: TypingMode, settings: Settings) {
     }
     if (!/^[a-z]$/i.test(event.key)) return;
     event.preventDefault();
-    if (status === "idle") { setStatus("active"); startedAt.current = performance.now(); }
+    const now = performance.now();
+    if (status === "idle") { setStatus("active"); startedAt.current = now; }
     const key = event.key.toLowerCase();
     const nextRow = consumeBlockLetter(blocks[currentBlock], consumed[currentBlock], key);
     setAttempts((value) => value + 1);
@@ -308,12 +322,13 @@ function useFreedomSession(mode: TypingMode, settings: Settings) {
     setHistory((value) => [...value, { block: currentBlock, letter }]);
     setFeedback("hit");
     if (settings.sessionType === "words" && currentBlock === blocks.length - 1 && isFreedomBlockComplete(nextRow)) {
+      setElapsedMilliseconds(Math.round(now - startedAt.current));
       setStatus("done");
     }
   };
 
   return {
-    blocks, consumed, incomplete, currentBlock, status, elapsed, accuracy, wpm, remaining, restart, onKey, panelRef,
+    blocks, consumed, incomplete, currentBlock, status, elapsed, elapsedMilliseconds, accuracy, wpm, remaining, restart, onKey, panelRef,
     append: appendBlocks,
     focus: () => panelRef.current?.focus({ preventScroll: true }),
     characterCount: hits + spaceHits,

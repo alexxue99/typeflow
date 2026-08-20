@@ -62,14 +62,16 @@ export function Leaderboard({ mode, settings, done, score, accuracy, elapsed, us
 
   return <section className="leaderboard-card" aria-labelledby="leaderboard-title">
     <div className="leaderboard-heading">
-      <div><span className="eyebrow">{mode} leaderboard</span><h2 id="leaderboard-title">Top 10</h2></div>
+      <div><span className="eyebrow">{mode} leaderboard</span>
+      <p className="leaderboard-settings"> {config.label.split(" · ").map((label, index) => <span key={`${label}-${index}`} style={index > 0 ? { color: "var(--muted)", fontSize: "13px" } : undefined}>{index > 0 ? " · " : ""}{label}</span>)}</p>
+      <h2 id="leaderboard-title">Top 10</h2>
+    </div>
       {personal && <p className="personal-best">Your best <strong>{formatLeaderboardScore(personal.score, config)}</strong></p>}
     </div>
-    <p className="leaderboard-settings"><strong>Settings:</strong> {config.label}</p>
     {!username && <p className="score-sign-in">Scores are saved only for signed-in users. {authAvailable ? <><button className="auth-text-button" onClick={onSignIn}>Sign in</button> before finishing a session to record yours.</> : "Authentication is not configured for this deployment."}</p>}
     {error ? <p className="leaderboard-message" role="status">{error}</p> : loading ? <p className="leaderboard-message">Loading scores…</p> : board.length === 0 ? <p className="leaderboard-message">No ranked scores yet. Finish a session to set the pace.</p> : <div className="leaderboard-table-wrap"><table>
-      <thead><tr><th>Rank</th><th>Username</th><th>Settings</th><th>Accuracy</th>{config.scoreKind !== "time" && <th>Time</th>}</tr></thead>
-      <tbody>{board.map((entry) => <tr key={`${entry.rank}-${entry.username}`} className={entry.isYou ? "leaderboard-you" : undefined}><td>#{entry.rank}</td><td>{entry.username}{entry.isYou ? <span> you</span> : null}</td><td><strong>{formatLeaderboardScore(entry.score, config)}</strong></td><td>{entry.accuracy}%</td>{config.scoreKind !== "time" && <td>{entry.elapsed}s</td>}</tr>)}</tbody>
+      <thead><tr><th>Rank</th><th>Username</th><th>{config.scoreLabel === "points" ? "Points" : config.scoreLabel}</th><th>Accuracy</th></tr></thead>
+      <tbody>{board.map((entry) => <tr key={`${entry.rank}-${entry.username}`} className={entry.isYou ? "leaderboard-you" : undefined}><td>#{entry.rank}</td><td>{entry.username}{entry.isYou ? <span> you</span> : null}</td><td><strong>{formatLeaderboardScore(entry.score, config)}</strong></td><td>{entry.accuracy}%</td></tr>)}</tbody>
     </table></div>}
   </section>;
 }

@@ -1,6 +1,6 @@
 import type { LeaderboardMode, UserBest } from "./types";
 
-export type UserStatsSessionType = "timed" | "words";
+export type UserStatsSessionType = "time" | "words";
 
 export type UserStatsFilters = {
   mode: LeaderboardMode | "all";
@@ -28,7 +28,7 @@ export function readUserStatsSession(best: UserBest): UserStatsSession | null {
     const amount = config.session?.amount;
     if (typeof amount !== "number" || !Number.isFinite(amount)) return null;
 
-    if (storedType === "timed") return { type: "timed", amount, unit: "seconds" };
+    if (storedType === "time") return { type: "time", amount, unit: "seconds" };
     if (storedType === "words" || storedType === "blocks" || storedType === "targets") {
       return { type: "words", amount, unit: storedType };
     }
@@ -40,6 +40,11 @@ export function readUserStatsSession(best: UserBest): UserStatsSession | null {
 
 export function userStatsAmountKey(session: Pick<UserStatsSession, "type" | "amount">) {
   return `${session.type}:${session.amount}`;
+}
+
+export function userStatsRulesLabel(best: UserBest) {
+  const labelParts = best.configLabel.split(/\s*\u00c2?\u00b7\s*/u);
+  return labelParts.length > 1 ? labelParts.slice(1).join(" · ") : best.configLabel;
 }
 
 export function filterUserBests(bests: UserBest[], filters: UserStatsFilters) {

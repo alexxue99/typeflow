@@ -8,11 +8,11 @@ export type LeaderboardConfig = {
 };
 
 export function createLeaderboardConfig(mode: LeaderboardMode, settings: Settings): LeaderboardConfig {
-  const scoreKind = mode === "keyboardshot" && settings.sessionType === "words" ? "time" : "higher";
-  const session = settings.sessionType === "timed"
-    ? { type: "timed", amount: settings.duration, label: `${settings.duration} seconds` }
+  const scoreKind = settings.sessionType === "words" ? "time" : "higher";
+  const session = settings.sessionType === "time"
+    ? { type: "time", amount: settings.duration, label: `time ${settings.duration}` }
     : settings.sessionType === "words"
-      ? { type: mode === "keyboardshot" ? "targets" : mode === "flow" ? "words" : "blocks", amount: settings.wordCount, label: `${settings.wordCount} ${mode === "keyboardshot" ? "targets" : mode === "flow" ? "words" : "blocks"}` }
+      ? { type: mode === "keyboardshot" ? "targets" : mode === "flow" ? "words" : "blocks", amount: settings.wordCount, label: `${mode === "keyboardshot" ? "targets" : mode === "flow" ? "words" : "blocks"} ${settings.wordCount}` }
       : { type: "endless", amount: 0, label: "endless" };
 
   let rules: Record<string, string | number | boolean>;
@@ -27,7 +27,7 @@ export function createLeaderboardConfig(mode: LeaderboardMode, settings: Setting
       //trace: settings.keyboardshotTrace,
     };
     labels = [
-      `${settings.keyboardshotTargetCount} keys highlighted`,
+      `keys highlighted ${settings.keyboardshotTargetCount}`,
       //settings.keyboardshotLayout.toUpperCase(),
       settings.useStandardLetterFrequency ? "standard letter frequency on" : "standard letter frequency off",
       settings.keyboardshotShowLetters ? "letters shown" : "letters hidden",
@@ -55,7 +55,7 @@ export function createLeaderboardConfig(mode: LeaderboardMode, settings: Setting
 }
 
 export function isTimeLeaderboard(mode: string, configKey: string) {
-  if (mode !== "keyboardshot") return false;
+  if (!isLeaderboardMode(mode)) return false;
   try {
     const config = JSON.parse(configKey) as { session?: { scoring?: unknown } };
     return config.session?.scoring === "elapsed-ms";

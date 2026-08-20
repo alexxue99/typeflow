@@ -37,4 +37,4 @@ Settings and typing analytics stay in the user's browser. Authenticated leaderbo
 
 ## Current version
 
-Version 0.2.5
+Version 0.2.6

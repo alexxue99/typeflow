@@ -10,7 +10,7 @@ describe("leaderboard configurations", () => {
 
     expect(differentDuration.key).not.toBe(baseline.key);
     expect(differentGap.key).not.toBe(baseline.key);
-    expect(baseline.label).toContain(`${DEFAULT_SETTINGS.duration} seconds`);
+    expect(baseline.label).toContain(`time ${DEFAULT_SETTINGS.duration}`);
     expect(baseline.label).toContain(`finger gap ${DEFAULT_SETTINGS.minimumGap}`);
   });
 
@@ -23,7 +23,7 @@ describe("leaderboard configurations", () => {
     });
 
     expect(config.scoreLabel).toBe("points");
-    expect(config.label).toContain("4 keys highlighted");
+    expect(config.label).toContain("keys highlighted 4");
     expect(config.label).toContain("standard letter frequency on");
     expect(config.label).toContain("letters hidden");
   });
@@ -31,23 +31,22 @@ describe("leaderboard configurations", () => {
   it("uses the right fixed-length unit for every mode", () => {
     const settings = { ...DEFAULT_SETTINGS, sessionType: "words" as const, wordCount: 40 };
 
-    expect(createLeaderboardConfig("flow", settings).label).toContain("40 words");
-    expect(createLeaderboardConfig("zen", settings).label).toContain("40 blocks");
-    expect(createLeaderboardConfig("freedom", settings).label).toContain("40 blocks");
-    expect(createLeaderboardConfig("keyboardshot", settings).label).toContain("40 targets");
+    expect(createLeaderboardConfig("flow", settings).label).toContain("words 40");
+    expect(createLeaderboardConfig("zen", settings).label).toContain("blocks 40");
+    expect(createLeaderboardConfig("freedom", settings).label).toContain("blocks 40");
+    expect(createLeaderboardConfig("keyboardshot", settings).label).toContain("targets 40");
   });
 
-  it("ranks fixed-target Keyboardshot sessions by millisecond time", () => {
-    const config = createLeaderboardConfig("keyboardshot", {
-      ...DEFAULT_SETTINGS,
-      sessionType: "words",
-      wordCount: 25,
-    });
+  it("ranks all fixed-length sessions by millisecond time", () => {
+    const settings = { ...DEFAULT_SETTINGS, sessionType: "words" as const, wordCount: 25 };
 
-    expect(config.scoreKind).toBe("time");
-    expect(config.scoreLabel).toBe("Time");
-    expect(isTimeLeaderboard("keyboardshot", config.key)).toBe(true);
-    expect(formatLeaderboardScore(1234, config)).toBe("1.234s");
+    for (const mode of ["flow", "zen", "freedom", "keyboardshot"] as const) {
+      const config = createLeaderboardConfig(mode, settings);
+      expect(config.scoreKind).toBe("time");
+      expect(config.scoreLabel).toBe("Time");
+      expect(isTimeLeaderboard(mode, config.key)).toBe(true);
+      expect(formatLeaderboardScore(1234, config)).toBe("1.234s");
+    }
   });
 
   it("keeps timed Keyboardshot sessions ranked by points", () => {

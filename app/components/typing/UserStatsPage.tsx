@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { isTimeLeaderboard } from "../../lib/leaderboard";
 import type { LeaderboardMode, UserBest } from "../../lib/types";
-import { filterUserBests, readUserStatsSession, userStatsAmountKey, type UserStatsSessionType } from "../../lib/userStats";
+import { filterUserBests, readUserStatsSession, userStatsAmountKey, userStatsRulesLabel, type UserStatsSession, type UserStatsSessionType } from "../../lib/userStats";
 
 type StatsResponse = { username?: string; bests?: UserBest[]; error?: string };
 
@@ -19,9 +19,13 @@ const MODE_OPTIONS: { value: LeaderboardMode; label: string }[] = [
 ];
 
 function amountLabel(type: UserStatsSessionType, amount: number, units: Set<string>) {
-  if (type === "timed") return `${amount} seconds`;
-  if (units.size === 1) return `${amount} ${Array.from(units)[0]}`;
-  return `${amount} words / blocks / targets`;
+  if (type === "time") return `time ${amount}`;
+  if (units.size === 1) return `${Array.from(units)[0]} ${amount}`;
+  return `words / blocks / targets  ${Array.from(units)[0]}`;
+}
+
+function sessionAmountLabel(session: UserStatsSession | null) {
+  return session ? amountLabel(session.type, session.amount, new Set([session.unit])) : "—";
 }
 
 export function UserStatsPage({ username, authAvailable, onSignIn }: { username: string | null; authAvailable: boolean; onSignIn: () => void }) {
@@ -77,13 +81,16 @@ export function UserStatsPage({ username, authAvailable, onSignIn }: { username:
           : <>
             <div className="user-stats-filters" aria-label="Filter personal bests">
               <label>Game mode<select value={modeFilter} onChange={(event) => { setModeFilter(event.target.value as LeaderboardMode | "all"); setAmountFilter("all"); }}><option value="all">All modes</option>{MODE_OPTIONS.map((mode) => <option key={mode.value} value={mode.value}>{mode.label}</option>)}</select></label>
-              <label>Session type<select value={sessionTypeFilter} onChange={(event) => { setSessionTypeFilter(event.target.value as UserStatsSessionType | "all"); setAmountFilter("all"); }}><option value="all">Both types</option><option value="timed">Timed</option><option value="words">Words</option></select></label>
+              <label>Session type<select value={sessionTypeFilter} onChange={(event) => { setSessionTypeFilter(event.target.value as UserStatsSessionType | "all"); setAmountFilter("all"); }}><option value="all">Both types</option><option value="time">Time</option><option value="words">Words</option></select></label>
               <label>Time / word count<select value={amountFilter} onChange={(event) => setAmountFilter(event.target.value)}><option value="all">All amounts</option>{amountOptions.map(([key, option]) => <option key={key} value={key}>{amountLabel(option.type, option.amount, option.units)}</option>)}</select></label>
             </div>
             <div className="user-stats-results" style={{ height: resultsHeight }}>
               {filteredBests.length === 0
                 ? <div className="empty-state user-stats-filter-empty"><h2>No matching performances.</h2><p>Try a different combination of filters.</p></div>
-                : <div className="table-card user-stats-table"><table><thead><tr><th>Mode</th><th>Settings</th><th>Best</th><th>Accuracy</th><th>Time</th></tr></thead><tbody>{filteredBests.map((best) => <tr key={`${best.mode}-${best.configKey}`}><td className="stats-mode">{best.mode}</td><td>{best.configLabel}</td><td><strong>{formatScore(best)}</strong></td><td>{best.accuracy}%</td><td>{isTimeLeaderboard(best.mode, best.configKey) ? "—" : `${best.elapsed}s`}</td></tr>)}</tbody></table></div>}
+                : <div className="table-card user-stats-table"><table><thead><tr><th>Mode</th><th>Test Type</th><th>Settings</th><th>Best</th><th>Accuracy</th></tr></thead><tbody>{filteredBests.map((best) => {
+                  const session = readUserStatsSession(best);
+                  return <tr key={`${best.mode}-${best.configKey}`}><td className="stats-mode">{best.mode}</td><td className="stats-session-amount">{sessionAmountLabel(session)}</td><td>{userStatsRulesLabel(best)}</td><td><strong>{formatScore(best)}</strong></td><td>{best.accuracy}%</td></tr>;
+                })}</tbody></table></div>}
             </div>
           </>}
   </section>;
