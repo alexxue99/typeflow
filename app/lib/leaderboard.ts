@@ -8,7 +8,7 @@ export type LeaderboardConfig = {
 };
 
 export function createLeaderboardConfig(mode: LeaderboardMode, settings: Settings): LeaderboardConfig {
-  const scoreKind = settings.sessionType === "words" ? "time" : "higher";
+  const scoreKind = settings.sessionType === "words" && mode === "keyboardshot" ? "time" : "higher";
   const session = settings.sessionType === "time"
     ? { type: "time", amount: settings.duration, label: `time ${settings.duration}` }
     : settings.sessionType === "words"

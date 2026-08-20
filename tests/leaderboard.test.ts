@@ -37,16 +37,28 @@ describe("leaderboard configurations", () => {
     expect(createLeaderboardConfig("keyboardshot", settings).label).toContain("targets 40");
   });
 
-  it("ranks all fixed-length sessions by millisecond time", () => {
+  it("ranks fixed-length typing sessions by WPM", () => {
     const settings = { ...DEFAULT_SETTINGS, sessionType: "words" as const, wordCount: 25 };
 
-    for (const mode of ["flow", "zen", "freedom", "keyboardshot"] as const) {
+    for (const mode of ["flow", "zen", "freedom"] as const) {
       const config = createLeaderboardConfig(mode, settings);
-      expect(config.scoreKind).toBe("time");
-      expect(config.scoreLabel).toBe("Time");
-      expect(isTimeLeaderboard(mode, config.key)).toBe(true);
-      expect(formatLeaderboardScore(1234, config)).toBe("1.234s");
+      expect(config.scoreKind).toBe("higher");
+      expect(config.scoreLabel).toBe("WPM");
+      expect(isTimeLeaderboard(mode, config.key)).toBe(false);
+      expect(JSON.parse(config.key).session).not.toHaveProperty("scoring");
+      expect(formatLeaderboardScore(1234, config)).toBe("12.34 WPM");
     }
+  });
+
+  it("keeps fixed-length Keyboardshot sessions ranked by millisecond time", () => {
+    const settings = { ...DEFAULT_SETTINGS, sessionType: "words" as const, wordCount: 25 };
+    const config = createLeaderboardConfig("keyboardshot", settings);
+
+    expect(config.scoreKind).toBe("time");
+    expect(config.scoreLabel).toBe("Time");
+    expect(isTimeLeaderboard("keyboardshot", config.key)).toBe(true);
+    expect(JSON.parse(config.key).session).toMatchObject({ scoring: "elapsed-ms" });
+    expect(formatLeaderboardScore(1234, config)).toBe("1.234s");
   });
 
   it("keeps timed Keyboardshot sessions ranked by points", () => {

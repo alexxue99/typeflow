@@ -101,8 +101,8 @@ function SequentialTypingPage(props: TypePageProps) {
           <p>{session.status === "idle" ? "Click anywhere here, then start typing. " : ""}{"Use Backspace to fix typos. "}Press {settings.resetHotkey} to reset.</p>
         )}
       </div>
-      {session.status === "done" && <div className="result-card"><div><span className="eyebrow">Good job</span><h2>{settings.sessionType === "words" ? `${(session.elapsedMilliseconds / 1000).toFixed(3)}s` : `${session.wpm_scaled / 100} WPM`} · {session.accuracy}% accuracy</h2></div><div className="session-actions"><button className="icon-button" onClick={() => session.restart()} aria-label="Restart session">↻</button></div></div>}
-      {(mode === "flow" || mode === "zen" || mode === "freedom") && <Leaderboard mode={mode} settings={settings} done={session.status === "done"} score={settings.sessionType === "words" ? session.elapsedMilliseconds : session.wpm_scaled} accuracy={session.accuracy} elapsed={settings.sessionType === "words" ? session.elapsedMilliseconds : session.elapsed} username={props.username} authAvailable={props.authAvailable} onSignIn={props.onSignIn} />}
+      {session.status === "done" && <div className="result-card"><div><span className="eyebrow">Good job</span><h2>{`${session.wpm_scaled / 100} WPM`} · {session.accuracy}% accuracy</h2></div><div className="session-actions"><button className="icon-button" onClick={() => session.restart()} aria-label="Restart session">↻</button></div></div>}
+      {(mode === "flow" || mode === "zen" || mode === "freedom") && <Leaderboard mode={mode} settings={settings} done={session.status === "done"} score={session.wpm_scaled} accuracy={session.accuracy} elapsed={settings.sessionType === "words" ? session.elapsedMilliseconds : session.elapsed} username={props.username} authAvailable={props.authAvailable} onSignIn={props.onSignIn} />}
     </section>
   );
 }
