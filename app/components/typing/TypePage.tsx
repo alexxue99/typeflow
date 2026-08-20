@@ -72,7 +72,7 @@ function SequentialTypingPage(props: TypePageProps) {
       {mode === "practice" && <div className="notice">{practiceTargets.length ? `This practice emphasizes "${practiceTargets.join(", ")}" based on your recent Flow performances.` : "Complete a few Flow sessions to unlock personalized exercises. This sample session is not added to your analytics."}</div>}
       <div className="stats-strip">
         <Metric label="WPM" value={Math.round(session.wpm_scaled / 100)} /><Metric label="Accuracy" value={`${session.accuracy}%`} />
-        <Metric label={settings.sessionType === "time" ? "Remaining" : "Elapsed"} value={settings.sessionType === "time" ? `${session.remaining}s` : settings.sessionType === "words" ? `${(session.elapsedMilliseconds / 1000).toFixed(3)}s` : `${session.elapsed}s`} />
+        <Metric label={settings.sessionType === "time" ? "Remaining" : "Elapsed"} value={settings.sessionType === "time" ? `${session.remaining}s` : settings.sessionType === "words" ? `${(session.elapsedMilliseconds / 1000).toFixed(1)}s` : `${session.elapsed}s`} />
         <Metric label="Characters" value={session.characterCount} /><Metric label="Progress" value={settings.sessionType === "words" ? `${session.progress}%` : "—"} />
       </div>
       <div
