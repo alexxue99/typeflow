@@ -93,7 +93,7 @@ function SequentialTypingPage(props: TypePageProps) {
       {session.status === "done" && <div className="result-card"><div className="result-card-summary"><div><span className="eyebrow">Good job</span><h2>{`${session.wpm_scaled / 100} WPM`} · {session.accuracy}% accuracy</h2></div>
       <div className="session-actions"><button className="icon-button" onClick={() => session.restart()} aria-label="Restart session">↻</button></div></div>
       <p className="result-tip">
-        {mode === "cadence" ? "Tip: If you need more time to prepare your fingers for the next block, try increasing the cadence delay in Cadence settings." :
+        {mode === "cadence" ? "Tip: If you need more time to prepare your fingers for the next block, try increasing the cadence delay in Cadence settings" :
         "Tip: If you find yourself having to use the same finger twice in a row, try adjusting your finger-to-key mapping in Settings"}.</p></div>}
       {(mode === "flow" || mode === "zen" || mode === "cadence") && <Leaderboard mode={mode} settings={settings} done={session.status === "done"} score={session.wpm_scaled} accuracy={session.accuracy} elapsed={settings.sessionType === "words" ? session.elapsedMilliseconds : session.elapsed} username={props.username} authAvailable={props.authAvailable} onSignIn={props.onSignIn} />}
     </section>
