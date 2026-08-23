@@ -50,7 +50,24 @@ function SequentialTypingPage(props: TypePageProps) {
   const session = sequentialSession;
   const practiceTargets = mode === "practice" ? rankTrouble(analytics) : [];
   const [cursorShownByMouse, setCursorShownByMouse] = useState(false);
+  const [typingFocused, setTypingFocused] = useState(false);
   const hideCursor = settings.hideCursorDuringTests && session.status === "active" && !cursorShownByMouse;
+
+  useEffect(() => {
+    const syncTypingFocus = () => {
+      setTypingFocused(document.hasFocus() && document.activeElement === sequentialSession.inputRef.current);
+    };
+
+    window.addEventListener("focus", syncTypingFocus);
+    window.addEventListener("blur", syncTypingFocus);
+    document.addEventListener("visibilitychange", syncTypingFocus);
+    syncTypingFocus();
+    return () => {
+      window.removeEventListener("focus", syncTypingFocus);
+      window.removeEventListener("blur", syncTypingFocus);
+      document.removeEventListener("visibilitychange", syncTypingFocus);
+    };
+  }, [sequentialSession.inputRef]);
 
   return (
     <section className="type-page" data-hide-cursor={hideCursor ? "true" : "false"} onMouseMove={() => {
@@ -75,12 +92,13 @@ function SequentialTypingPage(props: TypePageProps) {
         className="typing-panel"
         data-caret={settings.caretAppearance}
         data-caret-blink={settings.caretBlink ? "on" : "off"}
+        data-typing-focused={typingFocused ? "true" : "false"}
         onClick={session.focus}
         style={{ fontSize: settings.fontSize, "--caret-color": session.cadencePaused ? "var(--correct)" : settings.caretColor } as CSSProperties}
       >
         {mode === "cadence" && session.status === "idle" && <p className="cadence-idle-instruction">After you finish a block, the caret advances to the next block after a set delay. This delay can be modified in Cadence settings.</p>}
         <TextStream text={sequentialSession.exercise.text} typed={sequentialSession.typed} caretIndex={sequentialSession.caretIndex} onNeedMore={settings.sessionType === "words" ? undefined : sequentialSession.appendExercise} />
-        <input ref={sequentialSession.inputRef} className="typing-capture" onKeyDown={(event) => {
+        <input ref={sequentialSession.inputRef} className="typing-capture" onFocus={() => setTypingFocused(document.hasFocus())} onBlur={() => setTypingFocused(false)} onKeyDown={(event) => {
           if (event.key.length === 1 && event.key !== settings.resetHotkey && session.status !== "done") setCursorShownByMouse(false);
           sequentialSession.onKey(event);
         }} aria-label="Typing input" />

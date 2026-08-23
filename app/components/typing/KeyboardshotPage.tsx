@@ -121,9 +121,12 @@ export function KeyboardshotPage({ setMode, settings, setSettings, username, aut
           return <span data-key={key} data-finger={target && settings.keyboardshotFingerColors ? finger : undefined} aria-label={key} className={`keyboard-key${target ? " target" : ""}`} key={key}>{settings.keyboardshotShowLetters ? key : ""}</span>;
         })}</div>)}
       </div>
-      <p className="keyboardshot-status">{status === "idle" ? `Click anywhere here, then press any highlighted key to start. Press ${settings.resetHotkey} to reset.` : status === "done" ? `Test finished! Press ${settings.resetHotkey} to reset.` : feedback === "hit" ? "Hit!" : feedback === "miss" ? "Miss — find a highlighted key" : ""}</p>
+      {status !== "done" && (
+        <p className="keyboardshot-status">{status === "idle" ? `Click anywhere here, then press any highlighted key to start. Press ${settings.resetHotkey} to reset.` : feedback === "hit" ? "Hit!" : feedback === "miss" ? "Miss — find a highlighted key" : ""}</p>
+      )}
+      {status === "done" && <p className="keyboardshot-status typing-reset-prompt">Test finished! Press {settings.resetHotkey} to reset.</p>}
     </div>
-    {status === "done" && <div className="result-card"><div><span className="eyebrow">Nice reflexes</span><h2>{settings.sessionType === "words" ? (elapsedMilliseconds / 1000).toFixed(3) + "s" : (2 * hits - attempts) + " points (" + hits + " hits, " + (attempts - hits) + " misses)"} · {(hits / elapsedMilliseconds * 1000).toFixed(2) + " hits/s"} · {accuracy}% accuracy</h2></div><div className="session-actions"><button className="icon-button" onClick={() => restart()} aria-label="Restart session">↻</button></div></div>}
+    {status === "done" && <div className="result-card"><div className="result-card-summary"><div><span className="eyebrow">Nice reflexes</span><h2>{settings.sessionType === "words" ? (elapsedMilliseconds / 1000).toFixed(3) + "s" : (2 * hits - attempts) + " points (" + hits + " hits, " + (attempts - hits) + " misses)"} · {(hits / elapsedMilliseconds * 1000).toFixed(2) + " hits/s"} · {accuracy}% accuracy</h2></div><div className="session-actions"><button className="icon-button" onClick={() => restart()} aria-label="Restart session">↻</button></div></div></div>}
     <Leaderboard mode="keyboardshot" settings={settings} done={status === "done"} score={settings.sessionType === "words" ? elapsedMilliseconds : 2 * hits - attempts} accuracy={accuracy} elapsed={settings.sessionType === "words" ? elapsedMilliseconds : elapsedSeconds} username={username} authAvailable={authAvailable} onSignIn={onSignIn} />
   </section>;
 }

@@ -75,6 +75,8 @@ footer { border-top: 1px solid var(--border); width: min(1160px, calc(100% - 40p
 .typing-panel[data-caret="underline"] .current-word { border-radius:0; box-shadow:0 4px 0 var(--caret-color); }
 .typing-panel[data-caret="underline-letter"] .current { border-radius:0; background:transparent; box-shadow:0 4px 0 var(--caret-color); }
 .typing-panel[data-caret="invisible"] .current { background:transparent; box-shadow:none; }
+.typing-panel[data-typing-focused="false"] .current,
+.typing-panel[data-typing-focused="false"] .current-word { background:transparent; box-shadow:none; }
 .typing-panel[data-caret-blink="on"]:not([data-caret="invisible"]) .current,
 .typing-panel[data-caret-blink="on"][data-caret="underline"] .current-word { animation:caret-blink 1s step-end infinite; }
 @keyframes caret-blink { 50% { background-color:transparent; border-color:transparent; box-shadow:none; } }
@@ -106,8 +108,7 @@ table { width:100%; border-collapse:collapse; }th,td{text-align:left;padding:14p
 fieldset { display:flex; flex-direction:column; gap:18px; }fieldset legend { padding:0 8px; }label { display:flex;flex-direction:column;gap:8px;color:var(--muted);font-size:13px;font-weight:700;}label strong{color:var(--text);}select,input[type="number"],.mapping-grid input { width:100%;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:8px;padding:11px; }.check-row,.color-row{flex-direction:row;align-items:center;}.color-row{justify-content:space-between}.color-row input{width:52px;height:36px;border:1px solid var(--border);border-radius:8px;background:var(--bg);padding:3px;cursor:pointer}.mapping-fieldset{margin-top:18px}.mapping-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.warning-list{background:var(--accent-soft);padding:12px 18px;border-radius:8px;color:var(--text)}.warning-list p{margin:6px}
 .help-page > h1{text-align:center}.help-page > .eyebrow{display:block;text-align:center}.help-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:50px}.help-grid article{min-height:230px}
 .keyboardshot-panel { cursor:default; padding:40px; }
-.keyboardshot-panel:focus { outline:none; }
-.keyboardshot-panel[data-status="active"]:focus { outline:3px solid var(--accent); outline-offset:3px; }
+.keyboardshot-panel:focus { outline:3px solid var(--accent); outline-offset:3px; }
 .keyboardshot-instructions { margin:0 0 32px; text-align:center; color:var(--muted); ; transform:translateY(-20px); }
 .keyboard { position:relative; display:flex; flex-direction:column; gap:10px; align-items:center; user-select:none; }
 .keyboard-row { display:flex; gap:10px; justify-content:center; }
