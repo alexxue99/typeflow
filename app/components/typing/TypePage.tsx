@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/refs -- The session hook intentionally exposes its input ref and event handlers to its page component. */
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { calculateResult, collectsAnalytics, recordKeystroke } from "../../lib/analytics";
-import { calculateCadenceActiveElapsed, calculateCadenceCaretIndex } from "../../lib/cadence";
+import { calculateCadenceActiveElapsed, calculateCadenceCaretIndex, calculateCadenceTimerElapsed } from "../../lib/cadence";
 import { createCadenceAudioContext, playCadenceBlockSound } from "../../lib/cadenceSounds";
 import { generateExercise, rankTrouble } from "../../lib/generators";
 import { advanceToNextWord, backspaceTypedCharacters, isExtraWordCharacter } from "../../lib/typing";
@@ -78,7 +78,7 @@ function SequentialTypingPage(props: TypePageProps) {
         onClick={session.focus}
         style={{ fontSize: settings.fontSize, "--caret-color": session.cadencePaused ? "var(--correct)" : settings.caretColor } as CSSProperties}
       >
-        {mode === "cadence" && session.status === "idle" && <p className="cadence-idle-instruction">After you finish a block, the caret advances to the next block after a set delay.</p>}
+        {mode === "cadence" && session.status === "idle" && <p className="cadence-idle-instruction">After you finish a block, the caret advances to the next block after a set delay. This delay can be modified in Cadence settings.</p>}
         <TextStream text={sequentialSession.exercise.text} typed={sequentialSession.typed} caretIndex={sequentialSession.caretIndex} onNeedMore={settings.sessionType === "words" ? undefined : sequentialSession.appendExercise} />
         <input ref={sequentialSession.inputRef} className="typing-capture" onKeyDown={(event) => {
           if (event.key.length === 1 && event.key !== settings.resetHotkey && session.status !== "done") setCursorShownByMouse(false);
@@ -90,7 +90,11 @@ function SequentialTypingPage(props: TypePageProps) {
           <p>{session.status === "idle" ? "Click anywhere here, then start typing. " : ""}{mode === "cadence" ? "Blocks advance automatically. " : "Use Backspace to fix typos. "}Press {settings.resetHotkey} to reset.</p>
         )}
       </div>
-      {session.status === "done" && <div className="result-card"><div><span className="eyebrow">Good job</span><h2>{`${session.wpm_scaled / 100} WPM`} · {session.accuracy}% accuracy</h2></div><div className="session-actions"><button className="icon-button" onClick={() => session.restart()} aria-label="Restart session">↻</button></div></div>}
+      {session.status === "done" && <div className="result-card"><div className="result-card-summary"><div><span className="eyebrow">Good job</span><h2>{`${session.wpm_scaled / 100} WPM`} · {session.accuracy}% accuracy</h2></div>
+      <div className="session-actions"><button className="icon-button" onClick={() => session.restart()} aria-label="Restart session">↻</button></div></div>
+      <p className="result-tip">
+        {mode === "cadence" ? "Tip: If you need more time to prepare your fingers for the next block, try increasing the cadence delay in Cadence settings." :
+        "Tip: If you find yourself having to use the same finger twice in a row, try adjusting your finger-to-key mapping in Settings"}.</p></div>}
       {(mode === "flow" || mode === "zen" || mode === "cadence") && <Leaderboard mode={mode} settings={settings} done={session.status === "done"} score={session.wpm_scaled} accuracy={session.accuracy} elapsed={settings.sessionType === "words" ? session.elapsedMilliseconds : session.elapsed} username={props.username} authAvailable={props.authAvailable} onSignIn={props.onSignIn} />}
     </section>
   );
@@ -104,6 +108,7 @@ function useTypingSession({ mode, settings, analytics, setAnalytics }: Omit<Type
   const [status, setStatus] = useState<"idle" | "active" | "done">("idle");
   const [cadencePaused, setCadencePaused] = useState(false);
   const [elapsedMilliseconds, setElapsedMilliseconds] = useState(0);
+  const [timerElapsedMilliseconds, setTimerElapsedMilliseconds] = useState(0);
   const startedAt = useRef(0);
   const cadenceActiveStartedAt = useRef<number | null>(null);
   const cadenceActiveMilliseconds = useRef(0);
@@ -114,9 +119,9 @@ function useTypingSession({ mode, settings, analytics, setAnalytics }: Omit<Type
   const attempts = isCadence ? typed.filter((char) => char !== " ").length : typed.length;
   const correct = typed.filter((char, index) => char === exercise.text[index] && (!isCadence || char !== " ")).length;
   const accuracy = Math.round(correct / Math.max(1, attempts) * 100);
-  const elapsed = Math.floor(elapsedMilliseconds / 1000);
+  const elapsed = Math.floor((isCadence && settings.sessionType === "time" ? timerElapsedMilliseconds : elapsedMilliseconds) / 1000);
   const wpm_scaled = Math.round(((correct / 5) / Math.max(elapsedMilliseconds / 60000, 1 / 60)) * 100);
-  const remaining = Math.max(0, settings.duration - elapsed);
+  const remaining = Math.max(0, settings.duration - Math.floor(timerElapsedMilliseconds / 1000));
 
   const focusInput = () => inputRef.current?.focus({ preventScroll: true });
   const activeElapsedAt = (now: number) => calculateCadenceActiveElapsed(cadenceActiveMilliseconds.current, cadenceActiveStartedAt.current, now);
@@ -131,6 +136,7 @@ function useTypingSession({ mode, settings, analytics, setAnalytics }: Omit<Type
     setExercise(createExercise(nextSettings));
     setTyped([]);
     setElapsedMilliseconds(0);
+    setTimerElapsedMilliseconds(0);
     setStatus("idle");
     setCadencePaused(false);
     startedAt.current = 0;
@@ -155,11 +161,20 @@ function useTypingSession({ mode, settings, analytics, setAnalytics }: Omit<Type
   useEffect(() => {
     if (status !== "active") return;
     const timer = window.setInterval(() => {
-      const milliseconds = Math.round(isCadence ? activeElapsedAt(performance.now()) : performance.now() - startedAt.current);
-      if (settings.sessionType === "time" && milliseconds >= settings.duration * 1000) {
-        setElapsedMilliseconds(settings.duration * 1000);
+      const now = performance.now();
+      const activeMilliseconds = Math.round(isCadence ? activeElapsedAt(now) : now - startedAt.current);
+      const timedMilliseconds = Math.round(calculateCadenceTimerElapsed(startedAt.current, now));
+      if (settings.sessionType === "time" && timedMilliseconds >= settings.duration * 1000) {
+        if (cadencePauseTimer.current !== null) window.clearTimeout(cadencePauseTimer.current);
+        cadencePauseTimer.current = null;
+        setCadencePaused(false);
+        setElapsedMilliseconds(isCadence ? activeElapsedAt(startedAt.current + settings.duration * 1000) : settings.duration * 1000);
+        setTimerElapsedMilliseconds(settings.duration * 1000);
         setStatus("done");
-      } else setElapsedMilliseconds(milliseconds);
+      } else {
+        setElapsedMilliseconds(activeMilliseconds);
+        setTimerElapsedMilliseconds(timedMilliseconds);
+      }
     }, 200);
     return () => window.clearInterval(timer);
   }, [status, settings.duration, settings.sessionType, isCadence]);
@@ -190,6 +205,12 @@ function useTypingSession({ mode, settings, analytics, setAnalytics }: Omit<Type
     if (event.key.length !== 1 || status === "done") return;
     event.preventDefault();
     const now = performance.now();
+    if (status === "active" && settings.sessionType === "time" && calculateCadenceTimerElapsed(startedAt.current, now) >= settings.duration * 1000) {
+      setElapsedMilliseconds(isCadence ? activeElapsedAt(startedAt.current + settings.duration * 1000) : settings.duration * 1000);
+      setTimerElapsedMilliseconds(settings.duration * 1000);
+      setStatus("done");
+      return;
+    }
     if (isCadence && settings.cadenceBlockSound) {
       const context = cadenceAudioContext.current ?? createCadenceAudioContext();
       cadenceAudioContext.current = context;
@@ -216,11 +237,6 @@ function useTypingSession({ mode, settings, analytics, setAnalytics }: Omit<Type
     }
     lastKeyAt.current = now;
     const completesCadenceBlock = isCadence && expected !== " " && (exercise.text[index + 1] === " " || index === exercise.text.length - 1);
-    if (isCadence && settings.sessionType === "time" && activeElapsedAt(now) >= settings.duration * 1000) {
-      setElapsedMilliseconds(settings.duration * 1000);
-      setStatus("done");
-      return;
-    }
     if (next.length >= exercise.text.length) {
       if (settings.sessionType !== "words") {
         appendExercise();

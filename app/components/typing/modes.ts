@@ -29,7 +29,7 @@ export const MODES: { id: TypingMode; icon: ReactNode; title: string; header: st
     help: "A more serious mode for practicing unusual letter combinations. Use this mode to actively stretch your fingers. Relax your fingers while reaching for the letter combinations."},
   { id: "cadence", icon: cadenceIcon, title: "Cadence", header: "Feel the rhythm.",
     home: "Type random blocks that advance on a steady rhythm.",
-    help: "A rhythmic mode for reducing the delays between your fingers. Use the delay between blocks to prepare your fingers to type each block in a single beat."},
+    help: "A rhythmic mode for reducing the delays between your fingers. Use the delay between blocks to prepare your fingers to type each block in a single instant."},
   { id: "keyboardshot", icon: "⌨", title: "Keyboardshot", header: "React quickly.",
     home: "React quickly to multiple highlighted keys at a time.",
     help: "A fun mode inspired by gridshot from fps games. Use this mode to increase your coordination and dexterity in moving multiple fingers at a time."},

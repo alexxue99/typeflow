@@ -5,6 +5,8 @@ export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const authAvailable = isNeonAuthConfigured();
-  const session = authAvailable ? (await getNeonAuth().getSession()).data : null;
+  const session = authAvailable
+    ? (await getNeonAuth().getSession({ query: { disableRefresh: "true" } })).data
+    : null;
   return <TypingApp authAvailable={authAvailable} username={session?.user?.name ?? null} />;
 }

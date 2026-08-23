@@ -29,7 +29,7 @@ export const DEFAULT_SETTINGS: Settings = {
   hideCursorDuringTests: true,
   caretAppearance: "underline-letter",
   caretBlink: false,
-  caretColor: "#d95f3d",
+  caretColor: "#3db7d9",
   workoutFinger: "rightIndex",
   workoutRepeats: 3,
   keyboardshotTargetCount: 5,

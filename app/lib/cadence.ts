@@ -7,6 +7,10 @@ export function calculateCadenceActiveElapsed(
   return accumulatedMilliseconds + Math.max(0, now - activeStartedAt);
 }
 
+export function calculateCadenceTimerElapsed(sessionStartedAt: number, now: number) {
+  return Math.max(0, now - sessionStartedAt);
+}
+
 export function calculateCadenceCaretIndex(typedLength: number, paused: boolean) {
   return paused ? Math.max(0, typedLength - 1) : typedLength;
 }

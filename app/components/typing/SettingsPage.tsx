@@ -36,7 +36,7 @@ export function SettingsPage({ settings, setSettings }: SettingsPageProps) {
       <fieldset className="mapping-fieldset"><legend>Finger-to-key mapping</legend><p>Type lowercase letters into each field. Spaces and punctuation are ignored.</p>
         <div className="mapping-grid">{FINGERS.map((finger) => <label key={finger}>{FINGER_LABELS[finger]}<input value={settings.mapping[finger].join("")} onChange={(e) => changeKeys(finger, e.target.value)} /></label>)}</div>
         {mappingIssues.length > 0 && <div className="warning-list">{mappingIssues.map((issue) => <p key={issue}>⚠ {issue}</p>)}</div>}
-        <button onClick={() => update("mapping", DEFAULT_MAPPING)}>Reset standard mapping</button>
+        <button onClick={() => update("mapping", DEFAULT_MAPPING)}>Reset to standard mapping</button>
       </fieldset>
     </section>
   );

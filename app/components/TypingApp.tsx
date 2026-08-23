@@ -52,6 +52,11 @@ export default function TypingApp({ authAvailable = false, username = null }: { 
     router.refresh();
   };
 
+  const darkMode = settings.theme === "dark";
+  const toggleTheme = () => {
+    setSettings((current) => ({ ...current, theme: current.theme === "dark" ? "ocean" : "dark" }));
+  };
+
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -67,6 +72,15 @@ export default function TypingApp({ authAvailable = false, username = null }: { 
           {authAvailable && (username
             ? <a className="auth-nav" href="/auth/sign-out" title={`Signed in as ${username}`}>Sign out</a>
             : <button className={page === "sign-in" || page === "sign-up" ? "auth-nav active" : "auth-nav"} onClick={() => setPage("sign-in")}>Sign in</button>)}
+          <button
+            className="theme-toggle"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${darkMode ? "ocean" : "dark"} mode`}
+            title={`Switch to ${darkMode ? "ocean" : "dark"} mode`}
+            aria-pressed={darkMode}
+          >
+            <span aria-hidden="true">{darkMode ? "☀" : "☾"}</span>
+          </button>
         </nav>
       </header>
       <main>
@@ -79,7 +93,7 @@ export default function TypingApp({ authAvailable = false, username = null }: { 
         {page === "sign-in" && <section className="auth-page in-app-auth-page"><SignInForm onHome={() => setPage("home")} onSwitch={() => setPage("sign-up")} onSuccess={finishAuth} /></section>}
         {page === "sign-up" && <section className="auth-page in-app-auth-page"><SignUpForm onHome={() => setPage("home")} onSwitch={() => setPage("sign-in")} onSuccess={finishAuth} /></section>}
       </main>
-      <footer><span></span><span>Version 0.3.0</span></footer>
+      <footer><span></span><span>Version 0.3.1</span></footer>
     </div>
   );
 }
