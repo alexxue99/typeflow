@@ -85,8 +85,9 @@ function SequentialTypingPage(props: TypePageProps) {
       {mode === "practice" && <div className="notice">{practiceTargets.length ? `This practice emphasizes "${practiceTargets.join(", ")}" based on your recent Flow performances.` : "Complete a few Flow sessions to unlock personalized exercises. This sample session is not added to your analytics."}</div>}
       <div className="stats-strip">
         <Metric label="WPM" value={Math.round(session.wpm_scaled / 100)} /><Metric label="Accuracy" value={`${session.accuracy}%`} />
-        <Metric label={settings.sessionType === "time" ? "Remaining" : "Elapsed"} value={settings.sessionType === "time" ? `${session.remaining}s` : settings.sessionType === "words" ? `${(session.elapsedMilliseconds / 1000).toFixed(1)}s` : `${session.elapsed}s`} />
-        <Metric label="Characters" value={session.characterCount} /><Metric label="Progress" value={settings.sessionType === "words" ? `${session.progress}%` : "—"} />
+        <Metric label="" value = {settings.sessionType === "time" ? "Time " + settings.duration : settings.sessionType === "words" ? (mode==="flow" ? "Words " : "Blocks ") + settings.wordCount : "Endless"} />
+        <Metric label="Characters" value={session.characterCount} />
+        <Metric label={settings.sessionType === "time" ? "Time remaining" : settings.sessionType === "words" ? (mode==="flow" ? "Words remaining" : "Blocks remaining") : ""} value={settings.sessionType === "time" ? `${session.remaining}s` : settings.sessionType === "words" ? session.remainingUnits  : "—"} />
       </div>
       <div
         className="typing-panel"
@@ -140,6 +141,8 @@ function useTypingSession({ mode, settings, analytics, setAnalytics }: Omit<Type
   const elapsed = Math.floor((isCadence && settings.sessionType === "time" ? timerElapsedMilliseconds : elapsedMilliseconds) / 1000);
   const wpm_scaled = Math.round(((correct / 5) / Math.max(elapsedMilliseconds / 60000, 1 / 60)) * 100);
   const remaining = Math.max(0, settings.duration - Math.floor(timerElapsedMilliseconds / 1000));
+  const completedUnits = Array.from(exercise.text.matchAll(/\S+/g)).filter((match) => (match.index ?? 0) + match[0].length <= typed.length).length;
+  const remainingUnits = Math.max(0, settings.wordCount - completedUnits);
 
   const focusInput = () => inputRef.current?.focus({ preventScroll: true });
   const activeElapsedAt = (now: number) => calculateCadenceActiveElapsed(cadenceActiveMilliseconds.current, cadenceActiveStartedAt.current, now);
@@ -280,12 +283,11 @@ function useTypingSession({ mode, settings, analytics, setAnalytics }: Omit<Type
   };
 
   return {
-    exercise, typed, status, elapsed, elapsedMilliseconds, accuracy, wpm_scaled, remaining, inputRef, restart, onKey, appendExercise,
+    exercise, typed, status, elapsed, elapsedMilliseconds, accuracy, wpm_scaled, remaining, remainingUnits, inputRef, restart, onKey, appendExercise,
     focus: focusInput,
     caretIndex: isCadence ? calculateCadenceCaretIndex(typed.length, cadencePaused) : typed.length,
     cadencePaused: isCadence && cadencePaused,
     characterCount: attempts,
-    progress: Math.round(typed.length / exercise.text.length * 100),
   };
 }
 

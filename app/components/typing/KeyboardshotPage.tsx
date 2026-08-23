@@ -15,7 +15,6 @@ export function KeyboardshotPage({ setMode, settings, setSettings, username, aut
   const [hits, setHits] = useState(0);
   const [attempts, setAttempts] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [bestStreak, setBestStreak] = useState(0);
   const [elapsedMilliseconds, setElapsedMilliseconds] = useState(0);
   const [feedback, setFeedback] = useState<"hit" | "miss" | "">("");
   const [cursorShownByMouse, setCursorShownByMouse] = useState(false);
@@ -29,10 +28,11 @@ export function KeyboardshotPage({ setMode, settings, setSettings, username, aut
   const accuracy = Math.round(hits / Math.max(1, attempts) * 100);
   const elapsedSeconds = Math.floor(elapsedMilliseconds / 1000);
   const remaining = Math.max(0, settings.duration - elapsedSeconds);
+  const remainingTargets = Math.max(0, settings.wordCount - hits);
 
   const restart = (nextSettings = settings) => {
     setTargets(createTargets(nextSettings.keyboardshotTargetCount, Math.random, nextSettings.useStandardLetterFrequency)); setStatus("idle"); setHits(0); setAttempts(0);
-    setStreak(0); setBestStreak(0); setElapsedMilliseconds(0); setFeedback(""); setTraces([]); startedAt.current = 0; previousKeyRef.current = null;
+    setStreak(0); setElapsedMilliseconds(0); setFeedback(""); setTraces([]); startedAt.current = 0; previousKeyRef.current = null;
     panelRef.current?.focus({ preventScroll: true });
   };
 
@@ -99,7 +99,7 @@ export function KeyboardshotPage({ setMode, settings, setSettings, username, aut
         setElapsedMilliseconds(Math.round(performance.now() - startedAt.current));
         setStatus("done");
       }
-      setStreak((value) => { const next = value + 1; setBestStreak((best) => Math.max(best, next)); return next; });
+      setStreak((value) => value + 1);
       setTargets((current) => replaceTarget(current, key, Math.random, settings.useStandardLetterFrequency));
     } else setStreak(0);
   };
@@ -110,7 +110,12 @@ export function KeyboardshotPage({ setMode, settings, setSettings, username, aut
     <div className="mode-tabs">{MODES.map((item) => <button key={item.id} onClick={() => setMode(item.id)} className={item.id === "keyboardshot" ? "active" : ""}>{item.title}</button>)}</div>
     <div className="session-head"><div><span className="eyebrow">Keyboardshot session</span><h1>{status === "done" ? "Session complete." : MODES.find((m) => m.id === "keyboardshot")?.header}</h1></div><div className="session-actions"><button className="icon-button" onClick={() => restart()} aria-label="Restart session">↻</button></div></div>
     <ModeSettings mode="keyboardshot" settings={settings} setSettings={setSettings} onRestart={(nextSettings) => restart(nextSettings)} />
-    <div className="stats-strip"><Metric label="Hits - misses" value={`${2 * hits - attempts}`} /><Metric label="Accuracy" value={`${accuracy}%`} /><Metric label={settings.sessionType === "time" ? "Remaining" : "Elapsed"} value={settings.sessionType === "time" ? `${remaining}s` : `${(elapsedMilliseconds / 1000).toFixed(1)}s`} /><Metric label="Streak" value={streak} /><Metric label="Best streak" value={bestStreak} /></div>
+    <div className="stats-strip">
+      <Metric label="Hits - misses" value={`${2 * hits - attempts}`} /><Metric label="Accuracy" value={`${accuracy}%`} />
+      <Metric label="" value={settings.sessionType === "time" ? `Time ${settings.duration}` : settings.sessionType === "words" ? `Targets ${settings.wordCount}` : "Endless"} />
+      <Metric label="Streak" value={streak} />
+      <Metric label={settings.sessionType === "time" ? "Time remaining" : settings.sessionType === "words" ? "Targets remaining" : ""} value={settings.sessionType === "time" ? `${remaining}s` : settings.sessionType === "words" ? remainingTargets : "—"} />
+    </div>
     <div ref={panelRef} className="typing-panel keyboardshot-panel" data-status={status} data-glow-fade={settings.keyboardshotGlowFade ? "on" : "off"} tabIndex={0} onKeyDown={onKeyDown} onClick={() => panelRef.current?.focus()} aria-label="Keyboardshot game">
      {/* <p className="keyboardshot-instructions"> {status === "idle" ? "Press any highlighted key to start. Each hit immediately reveals a new target." : ""}</p> */}
       <div className="keyboard" data-layout={settings.keyboardshotLayout} ref={keyboardRef} aria-live="polite">
