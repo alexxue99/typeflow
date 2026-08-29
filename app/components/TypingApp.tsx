@@ -9,6 +9,7 @@ import type { AnalyticsData, Page, Settings, TypingMode } from "../lib/types";
 import { AnalyticsPage } from "./typing/AnalyticsPage";
 import { HelpPage } from "./typing/HelpPage";
 import { HomePage } from "./typing/HomePage";
+import { PrivacyPage } from "./typing/PrivacyPage";
 import { SettingsPage } from "./typing/SettingsPage";
 import { TypePage } from "./typing/TypePage";
 import { UserStatsPage } from "./typing/UserStatsPage";
@@ -90,10 +91,14 @@ export default function TypingApp({ authAvailable = false, username = null }: { 
         {page === "analytics" && <AnalyticsPage data={analytics} setData={setAnalytics} />}
         {page === "settings" && <SettingsPage settings={settings} setSettings={setSettings} />}
         {page === "help" && <HelpPage />}
+        {page === "privacy" && <PrivacyPage onHome={() => setPage("home")} />}
         {page === "sign-in" && <section className="auth-page in-app-auth-page"><SignInForm onHome={() => setPage("home")} onSwitch={() => setPage("sign-up")} onSuccess={finishAuth} /></section>}
         {page === "sign-up" && <section className="auth-page in-app-auth-page"><SignUpForm onHome={() => setPage("home")} onSwitch={() => setPage("sign-in")} onSuccess={finishAuth} /></section>}
       </main>
-      <footer><span></span><span>Version 0.3.2</span></footer>
+      <footer>
+        {page === "home" ? <button type="button" onClick={() => setPage("privacy")}>Privacy Policy</button> : <span />}
+        <span>Version 0.3.3</span>
+      </footer>
     </div>
   );
 }

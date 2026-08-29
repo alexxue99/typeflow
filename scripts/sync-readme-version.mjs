@@ -10,7 +10,7 @@ const targets = [
   },
   {
     path: "app/components/TypingApp.tsx",
-    pattern: /(<footer><span><\/span><span>Version )[^<]+(<\/span><\/footer>)/,
+    pattern: /(<span>Version )[^<]+(<\/span>)/,
     replacement: `$1${version}$2`,
   },
 ];

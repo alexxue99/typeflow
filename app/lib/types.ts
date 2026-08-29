@@ -9,7 +9,7 @@ export type TypingMode = "flow" | "zen" | "cadence" | "workout" | "practice" | "
 export type Theme = "light" | "dark" | "paper" | "forest" | "ocean" | "lavender" | "contrast";
 export type CaretAppearance = "highlight" | "underline" | "underline-letter" | "invisible";
 export type KeyboardLayout = "qwerty" | "dvorak";
-export type Page = "home" | "type" | "stats" | "analytics" | "settings" | "help" | "sign-in" | "sign-up";
+export type Page = "home" | "type" | "stats" | "analytics" | "settings" | "help" | "privacy" | "sign-in" | "sign-up";
 
 export interface Settings {
   mapping: FingerMapping;
