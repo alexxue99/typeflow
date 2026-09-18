@@ -97,7 +97,7 @@ export default function TypingApp({ authAvailable = false, username = null }: { 
       </main>
       <footer>
         {page === "home" ? <button type="button" onClick={() => setPage("privacy")}>Privacy Policy</button> : <span />}
-        <span>Version 0.3.3</span>
+        <span>Version 0.3.4</span>
       </footer>
     </div>
   );
